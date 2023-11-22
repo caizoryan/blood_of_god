@@ -57,6 +57,33 @@ export const make_new_alphabet_dataset = () => {
   return images.flat();
 };
 
+export const make_frame_dataset = (folder: string, num: number) => {
+  let images: any = [];
+
+  for (let i = 1; i < num; i++) {
+    images.push({
+      key: folder + i,
+      src: `./frames/${folder}/_${i}.png`,
+    });
+  }
+
+  return images;
+};
+
+export const load_images_as_array = (
+  dataset: { key: string; src: string }[],
+) => {
+  let images: any = [];
+  dataset.forEach((image) => {
+    const img = new Image();
+    img.src = image.src;
+
+    images.push(img);
+  });
+
+  return images;
+};
+
 export const load_images = (images: { key: string; src: string }[]) => {
   let alphabets: any = {};
   images.forEach((image) => {

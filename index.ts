@@ -13,13 +13,18 @@ import { render } from "./solid/web/web.js";
 import h from "./solid/h/h.js";
 import {
   load_images,
+  load_images_as_array,
   make_alphabet_dataset,
+  make_frame_dataset,
   romanize,
   setDPI,
 } from "./helpers.js";
+import { sequence_1 } from "./data.js";
 
+// the ratio of the image (height / width)
 const img_ratio = 0.78;
 
+// type variables
 let type = {
   x_bound: 0,
   y_bound: 0,
@@ -35,18 +40,11 @@ let type = {
   },
 };
 
-type line_data = {
-  text: string;
-  start_time: number;
-  end_time: number;
-  duration: () => number;
-};
-
-type chapter = { lines: line_data[]; images: string[]; audio: string };
-
-let start, previous_time, canvas, ctx, images_loaded;
+let start, previous_time, canvas, ctx, images_loaded, frames_loaded;
+let text = "";
 
 let tl: any = {};
+
 tl.current_time = 0;
 tl.total_time = 0;
 tl.chapter = 1;
@@ -59,127 +57,6 @@ tl.text_index = 0;
 tl.typing = false;
 tl.resetting = false;
 
-let text = "";
-
-const sequence_1 = {
-  "1": {
-    lines: {
-      "1": {
-        text: "I cannot help but look in the mirror and wonder If the blood of a God might save me",
-        start_time: 0,
-        end_time: 5000,
-      },
-    },
-    audio: "audio/chapter1(act1).mp3",
-    images: [],
-  },
-
-  "2": {
-    lines: {
-      "1": {
-        text: "Make my body as its meant to be",
-        start_time: 0,
-        end_time: 2800,
-      },
-
-      "2": {
-        text: "Flesh twisting and weaving under skin",
-        start_time: 2870,
-        end_time: 6000,
-      },
-      "3": {
-        text: "Animation of the body The truest image of what that God made",
-        start_time: 6000,
-        end_time: 11000,
-      },
-    },
-    audio: "audio/chapter2(act1).mp3",
-    images: [],
-  },
-
-  "3": {
-    lines: {
-      "1": {
-        text: " A deity sacrificed to make its creation sing",
-        start_time: 0,
-        end_time: 3600,
-      },
-    },
-    audio: "audio/chapter3(act1).mp3",
-    images: [],
-  },
-
-  "4": {
-    lines: {
-      "1": {
-        text: "Not left unfinished Like a lackluster thesis I am a project worth finishing Even if reality is a medium that cannot hold me",
-        start_time: 0,
-        end_time: 8550,
-      },
-    },
-    audio: "audio/chapter4(act2).mp3",
-    images: [],
-  },
-
-  "5": {
-    lines: {
-      "1": {
-        text: "How cruel To pin a moving image down to canvas",
-        start_time: 0,
-        end_time: 3500,
-      },
-
-      "2": {
-        text: "Tell it to be happy with only half itself",
-        start_time: 4300,
-        end_time: 7000,
-      },
-    },
-    audio: "audio/chapter5(act3).mp3",
-    images: [],
-  },
-
-  "6": {
-    lines: {
-      "1": {
-        text: "Sometimes",
-        start_time: 0,
-        end_time: 1500,
-      },
-
-      "2": {
-        text: "In the moment just before I close my eyes I can see them",
-        start_time: 1800,
-        end_time: 5600,
-      },
-
-      "3": {
-        text: "The rest of me",
-        start_time: 6000,
-        end_time: 7000,
-      },
-      "4": {
-        text: "The before and after image",
-        start_time: 7700,
-        end_time: 10000,
-      },
-
-      "5": {
-        text: "The parts of me forgotten in the still shot The pieces that make me a",
-        start_time: 10000,
-        end_time: 14000,
-      },
-      "6": {
-        text: "complete idea",
-        start_time: 14000,
-        end_time: 17000,
-      },
-    },
-    audio: "audio/chapter6(act3).mp3",
-    images: [],
-  },
-};
-
 const disturbance = {
   "1": 80,
   "2": 60,
@@ -189,13 +66,7 @@ const disturbance = {
   "6": 0,
 };
 
-const get_last_line_of_current_chapter = () => {
-  let current_chapter = sequence_1[tl.chapter];
-  current_chapter[
-    Object.keys(current_chapter)[Object.keys(current_chapter).length - 1]
-  ];
-};
-
+// sets the current chapter, and starts the lines
 const set_chapter = (number) => {
   tl.chapter = number;
   tl.line = 1;
@@ -211,6 +82,7 @@ const set_chapter = (number) => {
   cur_audio.play();
 };
 
+// starts line of current chapter
 const start_lines = () => {
   tl.typing = true;
   tl.text_index = 0;
@@ -234,10 +106,56 @@ const start_lines = () => {
   }
 };
 
+// to start off
 set_chapter("1");
 
+// this holds the state of the chapter selection bar
 const [next_chapter, set_next_chapter] = s(1);
 
+// Main Div that has everything, including our Canvas
+const Root = () => {
+  return h(
+    "div",
+    {
+      style: {
+        display: "flex",
+        "justify-content": "center",
+        "align-items": "center",
+        height: "100vh",
+      },
+    },
+    Frame,
+    ChapterSetter,
+  );
+};
+
+// ----------------
+// This is the canvas
+const Frame = () => {
+  onMount(() => {
+    canvas = document.getElementById("canvas") as HTMLCanvasElement;
+    ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+
+    setDPI(canvas, 300);
+    images_loaded = load_images(make_alphabet_dataset());
+    frames_loaded = load_images_as_array(make_frame_dataset("shape", 60));
+
+    // frames_loaded = [
+    //   ...frames_loaded,
+    //   ...load_images_as_array(make_frame_dataset("eye", 20)),
+    // ];
+    //
+    // frames_loaded = frames_loaded.sort(() => 0.5 - Math.random());
+
+    setTimeout(() => {
+      requestAnimationFrame(canvas_loop);
+    }, 100);
+  });
+
+  return h("canvas", { id: "canvas", width: 1200, height: 800 });
+};
+
+// the buttons that appear at the bottom of the screen
 const ChapterSetter = () => {
   const chapters = m(() => {
     let chapters: number[] = [];
@@ -247,8 +165,6 @@ const ChapterSetter = () => {
     }
     return chapters;
   });
-
-  console.log(chapters());
 
   return h(
     "div",
@@ -284,40 +200,11 @@ const ChapterSetter = () => {
   );
 };
 
-const Root = () => {
-  return h(
-    "div",
-    {
-      style: {
-        display: "flex",
-        "justify-content": "center",
-        "align-items": "center",
-        height: "100vh",
-      },
-    },
-    Frame,
-    ChapterSetter,
-  );
-};
+let frame_index = 0;
+let frame_beat = 0;
 
-// ----------------
-// This is the canvas
-const Frame = () => {
-  onMount(() => {
-    canvas = document.getElementById("canvas") as HTMLCanvasElement;
-    ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-
-    setDPI(canvas, 300);
-    images_loaded = load_images(make_alphabet_dataset());
-
-    setTimeout(() => {
-      requestAnimationFrame(canvas_loop);
-    }, 100);
-  });
-
-  return h("canvas", { id: "canvas", width: 1200, height: 800 });
-};
-
+// The loop that runs the animation
+// every frame, this function is called recursively
 const canvas_loop = (timestamp) => {
   if (!start) start = timestamp;
   if (tl.resetting) {
@@ -329,12 +216,20 @@ const canvas_loop = (timestamp) => {
 
   tl.current_time = elapsed;
 
-  if (elapsed > tl.reset) {
-    ctx.globalCompositeOperation = "multiply";
+  if (frame_beat == 4) {
+    if (frame_index >= 58) frame_index = 0;
+    else frame_index++;
+    draw_image_frame(frame_index);
+    frame_beat = 0;
+  } else {
+    frame_beat++;
+  }
 
+  if (elapsed > tl.reset) {
     draw_stats();
 
     if (tl.typing) {
+      ctx.globalCompositeOperation = "multiply";
       if (text[tl.text_index] !== " ")
         draw_alphabet(text[tl.text_index], tl.text_index + 3);
       tl.reset += tl.interval;
@@ -346,8 +241,8 @@ const canvas_loop = (timestamp) => {
     }
   } else {
     ctx.globalCompositeOperation = "source-over";
-    ctx.fillStyle = "rgba(255,255,255,0.05)";
-    ctx.fillRect(0, 0, 1200, 800);
+    // ctx.fillStyle = "rgba(255,255,255,0.05)";
+    // ctx.fillRect(0, 0, 1200, 800);
   }
 
   // variable_check();
@@ -355,6 +250,8 @@ const canvas_loop = (timestamp) => {
   requestAnimationFrame(canvas_loop);
 };
 
+// increments the text index, if its the last letter,
+// will unlock next chapter and stop the animations
 const increment_index = () => {
   if (tl.text_index < text.length - 1) tl.text_index++;
   else {
@@ -365,6 +262,7 @@ const increment_index = () => {
   }
 };
 
+// Drawing of the stats
 const draw_stats = () => {
   ctx.fillStyle = "black";
   ctx.font = "9px monospace";
@@ -388,11 +286,12 @@ const draw_stats = () => {
     h - 50,
   );
 
-  ctx.fillText("chapter: ".toUpperCase() + tl.chapter, w - 50, 50);
+  ctx.fillText("chapter: ".toUpperCase() + tl.chapter, w - 100, 50);
 
-  ctx.fillText("line: ".toUpperCase() + tl.line, w - 50, h - 50);
+  ctx.fillText("line: ".toUpperCase() + tl.line, w - 100, h - 50);
 };
 
+// draws the alphabet, the main type stuff
 const draw_alphabet = (letter: string, index) => {
   if (images_loaded) {
     let x = type.x_bound + ((index - type.line_at) * type.width) / 2;
@@ -419,6 +318,21 @@ const draw_alphabet = (letter: string, index) => {
   }
 };
 
+const draw_image_frame = (index) => {
+  if (frames_loaded) {
+    ctx.globalCompositeOperation = "source-over";
+    ctx.drawImage(
+      frames_loaded[index],
+      // Math.random() * 500 + 400, Math.random() * 500,
+      0,
+      100,
+      3425 / 4,
+      1662 / 4,
+    );
+  }
+};
+
+// resets the parameters of the type
 function reset_type() {
   type = {
     x_bound: 100,
