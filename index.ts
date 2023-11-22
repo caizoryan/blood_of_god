@@ -216,13 +216,15 @@ const canvas_loop = (timestamp) => {
 
   tl.current_time = elapsed;
 
-  if (frame_beat == 4) {
-    if (frame_index >= 58) frame_index = 0;
-    else frame_index++;
-    draw_image_frame(frame_index);
-    frame_beat = 0;
-  } else {
-    frame_beat++;
+  if (tl.chapter >= 5) {
+    if (frame_beat == 4) {
+      if (frame_index >= 58) frame_index = 0;
+      else frame_index++;
+      draw_image_frame(frame_index);
+      frame_beat = 0;
+    } else {
+      frame_beat++;
+    }
   }
 
   if (elapsed > tl.reset) {
@@ -240,9 +242,11 @@ const canvas_loop = (timestamp) => {
       ctx.fillRect(0, 0, 1200, 800);
     }
   } else {
-    ctx.globalCompositeOperation = "source-over";
-    // ctx.fillStyle = "rgba(255,255,255,0.05)";
-    // ctx.fillRect(0, 0, 1200, 800);
+    if (tl.chapter < 5) {
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = "rgba(255,255,255,0.05)";
+      ctx.fillRect(0, 0, 1200, 800);
+    }
   }
 
   // variable_check();
@@ -324,8 +328,8 @@ const draw_image_frame = (index) => {
     ctx.drawImage(
       frames_loaded[index],
       // Math.random() * 500 + 400, Math.random() * 500,
-      0,
-      100,
+      150,
+      150,
       3425 / 4,
       1662 / 4,
     );

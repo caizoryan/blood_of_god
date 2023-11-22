@@ -1821,15 +1821,17 @@ var canvas_loop = (timestamp) => {
   }
   const elapsed = timestamp - start;
   tl.current_time = elapsed;
-  if (frame_beat == 4) {
-    if (frame_index >= 58)
-      frame_index = 0;
-    else
-      frame_index++;
-    draw_image_frame(frame_index);
-    frame_beat = 0;
-  } else {
-    frame_beat++;
+  if (tl.chapter >= 5) {
+    if (frame_beat == 4) {
+      if (frame_index >= 58)
+        frame_index = 0;
+      else
+        frame_index++;
+      draw_image_frame(frame_index);
+      frame_beat = 0;
+    } else {
+      frame_beat++;
+    }
   }
   if (elapsed > tl.reset) {
     draw_stats();
@@ -1845,7 +1847,11 @@ var canvas_loop = (timestamp) => {
       ctx.fillRect(0, 0, 1200, 800);
     }
   } else {
-    ctx.globalCompositeOperation = "source-over";
+    if (tl.chapter < 5) {
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = "rgba(255,255,255,0.05)";
+      ctx.fillRect(0, 0, 1200, 800);
+    }
   }
   requestAnimationFrame(canvas_loop);
 };
@@ -1892,7 +1898,7 @@ var draw_alphabet = (letter, index) => {
 var draw_image_frame = (index) => {
   if (frames_loaded) {
     ctx.globalCompositeOperation = "source-over";
-    ctx.drawImage(frames_loaded[index], 0, 100, 856.25, 415.5);
+    ctx.drawImage(frames_loaded[index], 150, 150, 856.25, 415.5);
   }
 };
 reset_type();
