@@ -214,7 +214,7 @@ const canvas_loop = (timestamp) => {
   }
   const elapsed = timestamp - start;
 
-  tl.current_time = elapsed;
+  tl.current_time = Math.floor(elapsed / 1000);
 
   if (tl.chapter >= 5) {
     if (frame_beat == 4) {

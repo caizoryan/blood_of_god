@@ -1820,7 +1820,7 @@ var canvas_loop = (timestamp) => {
     tl.resetting = false;
   }
   const elapsed = timestamp - start;
-  tl.current_time = elapsed;
+  tl.current_time = Math.floor(elapsed / 1000);
   if (tl.chapter >= 5) {
     if (frame_beat == 4) {
       if (frame_index >= 58)
