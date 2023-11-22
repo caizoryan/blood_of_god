@@ -25,7 +25,7 @@ let type = {
   line_at: 0,
 
   width: 100,
-  height: function() {
+  height: function () {
     return this.width * img_ratio;
   },
 };
@@ -51,6 +51,7 @@ tl.disturbance = 50;
 tl.interval = 50;
 tl.reset = 50;
 tl.text_index = 0;
+tl.typing = false;
 
 let text = "apple mango banana";
 
@@ -70,18 +71,47 @@ const sequence_1 = {
   "2": {
     lines: {
       "1": {
-        text: "hello this is something",
+        text: "Make my body as its meant to be",
         start_time: 0,
-        end_time: 2000,
+        end_time: 2800,
       },
 
       "2": {
-        text: "this should come after",
-        start_time: 3000,
-        end_time: 5000,
+        text: "Flesh twisting and weaving under skin",
+        start_time: 2870,
+        end_time: 6000,
+      },
+      "3": {
+        text: "Animation of the body The truest image of what that God made",
+        start_time: 6000,
+        end_time: 11000,
       },
     },
     audio: "audio/chapter2(act1).mp3",
+    images: [],
+  },
+
+  "3": {
+    lines: {
+      "1": {
+        text: " A deity sacrificed to make its creation sing",
+        start_time: 0,
+        end_time: 3600,
+      },
+    },
+    audio: "audio/chapter3(act1).mp3",
+    images: [],
+  },
+
+  "4": {
+    lines: {
+      "1": {
+        text: "Not left unfinished Like a lackluster thesis I am a project worth finishing Even if reality is a medium that cannot hold me",
+        start_time: 0,
+        end_time: 8750,
+      },
+    },
+    audio: "audio/chapter4(act2).mp3",
     images: [],
   },
 };
@@ -94,7 +124,7 @@ const set_chapter = (number) => {
 
   tl.current_time = 0;
   tl.total_time = 0;
-  tl.disturbance = 10;
+  tl.disturbance = 50;
   tl.text_index = 0;
 
   reset_type();
@@ -103,13 +133,10 @@ const set_chapter = (number) => {
 };
 
 const start_lines = () => {
+  tl.typing = true;
   tl.text_index = 0;
   text = sequence_1[tl.chapter].lines[tl.line].text;
   tl.interval =
-    (sequence_1[tl.chapter].lines[tl.line].end_time -
-      sequence_1[tl.chapter].lines[tl.line].start_time) /
-    text.length;
-  tl.reset =
     (sequence_1[tl.chapter].lines[tl.line].end_time -
       sequence_1[tl.chapter].lines[tl.line].start_time) /
     text.length;
@@ -128,7 +155,7 @@ const start_lines = () => {
   }
 };
 
-set_chapter("2");
+set_chapter("4");
 
 const Root = () => {
   return h(
@@ -167,17 +194,19 @@ const canvas_loop = (timestamp) => {
   if (!start) start = timestamp;
   const elapsed = timestamp - start;
 
-  tl.current_time = elapsed / 1000;
+  tl.current_time = elapsed;
 
   if (elapsed > tl.reset) {
     ctx.globalCompositeOperation = "multiply";
 
     draw_stats();
 
-    if (text[tl.text_index] !== " ")
-      draw_alphabet(text[tl.text_index], tl.text_index + 3);
-    tl.reset += tl.interval;
-    increment_index();
+    if (tl.typing) {
+      if (text[tl.text_index] !== " ")
+        draw_alphabet(text[tl.text_index], tl.text_index + 3);
+      tl.reset += tl.interval;
+      increment_index();
+    }
   } else {
     ctx.globalCompositeOperation = "source-over";
     ctx.fillStyle = "rgba(255,255,255,0.05)";
@@ -191,7 +220,7 @@ const canvas_loop = (timestamp) => {
 
 const increment_index = () => {
   if (tl.text_index < text.length - 1) tl.text_index++;
-  else tl.text_index = 0;
+  else tl.typing = false;
 };
 
 const draw_stats = () => {
@@ -220,9 +249,6 @@ const variable_check = () => {
     tl.text_index = 0;
     tl.reset = 500;
     reset_type();
-    set_text(
-      "what if this was a really long sentence longer than I can think of",
-    );
   }
 };
 
@@ -264,7 +290,7 @@ function reset_type() {
     line_at: 0,
 
     width: 50,
-    height: function() {
+    height: function () {
       return this.width * img_ratio;
     },
   };
