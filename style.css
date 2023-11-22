@@ -1,0 +1,37 @@
+@font-face {
+  font-family: "Duckinator";
+  src: url("duckinator.ttf");
+}
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Duckinator";
+  font-size: 56px;
+  color: blue;
+  user-select: none;
+}
+
+.annotation {
+  font-size: 24px;
+  color: black;
+  font-weight: 700;
+  padding: 10px;
+  font-family: "Roboto";
+  background-color: #f7f7f7;
+}
+
+.quotation {
+  font-size: 42px;
+  color: black;
+  font-family: "Xanh Mono";
+  font-style: italic;
+  background-color: #f7f7f7;
+}
+
+textarea {
+  border: none;
+}
+
+textarea:focus-visible {
+  outline: none;
+}
