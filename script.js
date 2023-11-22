@@ -612,6 +612,100 @@ var createProvider = function(id, options) {
     return res;
   };
 };
+var dispose = function(d) {
+  for (let i = 0;i < d.length; i++)
+    d[i]();
+};
+var mapArray = function(list, mapFn, options = {}) {
+  let items = [], mapped = [], disposers = [], len = 0, indexes = mapFn.length > 1 ? [] : null;
+  onCleanup(() => dispose(disposers));
+  return () => {
+    let newItems = list() || [], i, j;
+    newItems[$TRACK];
+    return untrack(() => {
+      let newLen = newItems.length, newIndices, newIndicesNext, temp, tempdisposers, tempIndexes, start, end, newEnd, item;
+      if (newLen === 0) {
+        if (len !== 0) {
+          dispose(disposers);
+          disposers = [];
+          items = [];
+          mapped = [];
+          len = 0;
+          indexes && (indexes = []);
+        }
+        if (options.fallback) {
+          items = [FALLBACK];
+          mapped[0] = createRoot((disposer) => {
+            disposers[0] = disposer;
+            return options.fallback();
+          });
+          len = 1;
+        }
+      } else if (len === 0) {
+        mapped = new Array(newLen);
+        for (j = 0;j < newLen; j++) {
+          items[j] = newItems[j];
+          mapped[j] = createRoot(mapper);
+        }
+        len = newLen;
+      } else {
+        temp = new Array(newLen);
+        tempdisposers = new Array(newLen);
+        indexes && (tempIndexes = new Array(newLen));
+        for (start = 0, end = Math.min(len, newLen);start < end && items[start] === newItems[start]; start++)
+          ;
+        for (end = len - 1, newEnd = newLen - 1;end >= start && newEnd >= start && items[end] === newItems[newEnd]; end--, newEnd--) {
+          temp[newEnd] = mapped[end];
+          tempdisposers[newEnd] = disposers[end];
+          indexes && (tempIndexes[newEnd] = indexes[end]);
+        }
+        newIndices = new Map;
+        newIndicesNext = new Array(newEnd + 1);
+        for (j = newEnd;j >= start; j--) {
+          item = newItems[j];
+          i = newIndices.get(item);
+          newIndicesNext[j] = i === undefined ? -1 : i;
+          newIndices.set(item, j);
+        }
+        for (i = start;i <= end; i++) {
+          item = items[i];
+          j = newIndices.get(item);
+          if (j !== undefined && j !== -1) {
+            temp[j] = mapped[i];
+            tempdisposers[j] = disposers[i];
+            indexes && (tempIndexes[j] = indexes[i]);
+            j = newIndicesNext[j];
+            newIndices.set(item, j);
+          } else
+            disposers[i]();
+        }
+        for (j = start;j < newLen; j++) {
+          if (j in temp) {
+            mapped[j] = temp[j];
+            disposers[j] = tempdisposers[j];
+            if (indexes) {
+              indexes[j] = tempIndexes[j];
+              indexes[j](j);
+            }
+          } else
+            mapped[j] = createRoot(mapper);
+        }
+        mapped = mapped.slice(0, len = newLen);
+        items = newItems.slice(0);
+      }
+      return mapped;
+    });
+    function mapper(disposer) {
+      disposers[j] = disposer;
+      if (indexes) {
+        const [s, set] = createSignal(j);
+        indexes[j] = set;
+        return mapFn(newItems[j], s);
+      }
+      return mapFn(newItems[j]);
+    }
+  };
+};
 var createComponent = function(Comp, props) {
   if (hydrationEnabled) {
     if (sharedConfig.context) {
@@ -623,6 +717,12 @@ var createComponent = function(Comp, props) {
     }
   }
   return untrack(() => Comp(props || {}));
+};
+var For = function(props) {
+  const fallback = ("fallback" in props) && {
+    fallback: () => props.fallback
+  };
+  return createMemo(mapArray(() => props.each, props.children, fallback || undefined));
 };
 var sharedConfig = {
   context: undefined,
@@ -722,8 +822,8 @@ var reconcileArrays = function(parentNode, a, b) {
 };
 var render = function(code, element, init, options = {}) {
   let disposer;
-  createRoot((dispose) => {
-    disposer = dispose;
+  createRoot((dispose2) => {
+    disposer = dispose2;
     element === document ? code() : insert(element, code(), element.firstChild ? null : undefined, init);
   }, options.owner);
   return () => {
@@ -1400,6 +1500,31 @@ function setDPI(canvas, dpi) {
   var ctx = canvas.getContext("2d");
   ctx.scale(scaleFactor, scaleFactor);
 }
+function romanize(num) {
+  var lookup = {
+    M: 1000,
+    CM: 900,
+    D: 500,
+    CD: 400,
+    C: 100,
+    XC: 90,
+    L: 50,
+    XL: 40,
+    X: 10,
+    IX: 9,
+    V: 5,
+    IV: 4,
+    I: 1
+  }, roman = "", i;
+  for (i in lookup) {
+    while (num >= lookup[i]) {
+      roman += i;
+      num -= lookup[i];
+    }
+  }
+  console.log(roman);
+  return roman;
+}
 var make_alphabet_dataset = () => {
   let alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
   let images = alphabet.map((letter) => {
@@ -1473,7 +1598,8 @@ tl.interval = 50;
 tl.reset = 50;
 tl.text_index = 0;
 tl.typing = false;
-var text = "apple mango banana";
+tl.resetting = false;
+var text = "";
 var sequence_1 = {
   "1": {
     lines: {
@@ -1523,20 +1649,79 @@ var sequence_1 = {
       "1": {
         text: "Not left unfinished Like a lackluster thesis I am a project worth finishing Even if reality is a medium that cannot hold me",
         start_time: 0,
-        end_time: 8750
+        end_time: 8550
       }
     },
     audio: "audio/chapter4(act2).mp3",
     images: []
+  },
+  "5": {
+    lines: {
+      "1": {
+        text: "How cruel To pin a moving image down to canvas",
+        start_time: 0,
+        end_time: 3500
+      },
+      "2": {
+        text: "Tell it to be happy with only half itself",
+        start_time: 4300,
+        end_time: 7000
+      }
+    },
+    audio: "audio/chapter5(act3).mp3",
+    images: []
+  },
+  "6": {
+    lines: {
+      "1": {
+        text: "Sometimes",
+        start_time: 0,
+        end_time: 1500
+      },
+      "2": {
+        text: "In the moment just before I close my eyes I can see them",
+        start_time: 1800,
+        end_time: 5600
+      },
+      "3": {
+        text: "The rest of me",
+        start_time: 6000,
+        end_time: 7000
+      },
+      "4": {
+        text: "The before and after image",
+        start_time: 7700,
+        end_time: 1e4
+      },
+      "5": {
+        text: "The parts of me forgotten in the still shot The pieces that make me a",
+        start_time: 1e4,
+        end_time: 14000
+      },
+      "6": {
+        text: "complete idea",
+        start_time: 14000,
+        end_time: 17000
+      }
+    },
+    audio: "audio/chapter6(act3).mp3",
+    images: []
   }
+};
+var disturbance = {
+  "1": 80,
+  "2": 60,
+  "3": 40,
+  "4": 20,
+  "5": 10,
+  "6": 0
 };
 var set_chapter = (number) => {
   tl.chapter = number;
   tl.line = 1;
+  tl.resetting = true;
   let cur_audio = new Audio(sequence_1[tl.chapter].audio);
-  tl.current_time = 0;
-  tl.total_time = 0;
-  tl.disturbance = 50;
+  tl.disturbance = disturbance[tl.chapter];
   tl.text_index = 0;
   reset_type();
   start_lines();
@@ -1559,7 +1744,39 @@ var start_lines = () => {
     }
   }
 };
-set_chapter("4");
+set_chapter("1");
+var [next_chapter, set_next_chapter] = createSignal(1);
+var ChapterSetter = () => {
+  const chapters = createMemo(() => {
+    let chapters2 = [];
+    for (let i = 1;i <= next_chapter(); i++) {
+      chapters2.push(i);
+    }
+    return chapters2;
+  });
+  console.log(chapters());
+  return h("div", {
+    style: {
+      position: "absolute",
+      bottom: "10px",
+      left: "0px",
+      width: "100%",
+      height: "50px",
+      display: "flex",
+      "justify-content": "center"
+    }
+  }, () => For({
+    each: chapters(),
+    children: (chapter) => h("button", {
+      style: {
+        "margin-right": "30px"
+      },
+      onclick: () => {
+        set_chapter(chapter);
+      }
+    }, romanize(parseInt(chapter)))
+  }));
+};
 var Root = () => {
   return h("div", {
     style: {
@@ -1568,7 +1785,7 @@ var Root = () => {
       "align-items": "center",
       height: "100vh"
     }
-  }, Frame);
+  }, Frame, ChapterSetter);
 };
 var Frame = () => {
   onMount(() => {
@@ -1585,6 +1802,11 @@ var Frame = () => {
 var canvas_loop = (timestamp) => {
   if (!start)
     start = timestamp;
+  if (tl.resetting) {
+    start = timestamp;
+    tl.reset = 0;
+    tl.resetting = false;
+  }
   const elapsed = timestamp - start;
   tl.current_time = elapsed;
   if (elapsed > tl.reset) {
@@ -1595,6 +1817,10 @@ var canvas_loop = (timestamp) => {
         draw_alphabet(text[tl.text_index], tl.text_index + 3);
       tl.reset += tl.interval;
       increment_index();
+    } else {
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = "rgba(255,255,255,0.01)";
+      ctx.fillRect(0, 0, 1200, 800);
     }
   } else {
     ctx.globalCompositeOperation = "source-over";
@@ -1606,20 +1832,29 @@ var canvas_loop = (timestamp) => {
 var increment_index = () => {
   if (tl.text_index < text.length - 1)
     tl.text_index++;
-  else
+  else {
+    if (tl.typing) {
+      set_next_chapter(parseInt(tl.chapter) + 1);
+    }
     tl.typing = false;
+  }
 };
 var draw_stats = () => {
   ctx.fillStyle = "black";
   ctx.font = "9px monospace";
-  ctx.fillText("disturbance: ".toUpperCase() + "+-" + Math.floor(tl.disturbance), 10, 60);
+  let s = 3.125;
+  let w = parseInt(canvas.width) / s;
+  let h3 = parseInt(canvas.height) / s;
+  console.log(w, h3);
   ctx.fillText("current time: ".toUpperCase() + Math.floor(tl.current_time) + "s", 10, 50);
+  ctx.fillText("disturbance: ".toUpperCase() + "+-" + Math.floor(tl.disturbance), 10, h3 - 50);
+  ctx.fillText("chapter: ".toUpperCase() + tl.chapter, w - 50, 50);
+  ctx.fillText("line: ".toUpperCase() + tl.line, w - 50, h3 - 50);
 };
 var draw_alphabet = (letter, index) => {
   if (images_loaded) {
     let x = type.x_bound + (index - type.line_at) * type.width / 2;
     if (x > type.w_bound) {
-      console.log("new line");
       type.line++;
       type.line_at = index - 1;
       x = type.x_bound;

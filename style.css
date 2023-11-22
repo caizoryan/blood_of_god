@@ -5,10 +5,10 @@
 * {
   margin: 0;
   padding: 0;
-  font-family: "Duckinator";
-  font-size: 56px;
+  font-size: 16px;
   color: blue;
   user-select: none;
+  font-family: "Times New Roman";
 }
 
 .annotation {
@@ -16,7 +16,6 @@
   color: black;
   font-weight: 700;
   padding: 10px;
-  font-family: "Roboto";
   background-color: #f7f7f7;
 }
 
@@ -28,7 +27,11 @@
   background-color: #f7f7f7;
 }
 
-textarea {
+button {
+  all: unset;
+  cursor: pointer;
+
+  font-size: 16px;
   border: none;
 }
 
