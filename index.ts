@@ -24,6 +24,8 @@ import { sequence_1 } from "./data.js";
 // the ratio of the image (height / width)
 const img_ratio = 0.78;
 
+const [mouse, set_mouse] = s({ x: 0, y: 0 });
+
 // type variables
 let type = {
   x_bound: 0,
@@ -112,6 +114,11 @@ set_chapter("1");
 // this holds the state of the chapter selection bar
 const [next_chapter, set_next_chapter] = s(1);
 
+e(() => {
+  type.y_bound = mouse().y - type.line * 50;
+  type.x_bound = mouse().x > 300 ? 300 : mouse().x;
+});
+
 // Main Div that has everything, including our Canvas
 const Root = () => {
   return h(
@@ -135,6 +142,10 @@ const Frame = () => {
   onMount(() => {
     canvas = document.getElementById("canvas") as HTMLCanvasElement;
     ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+
+    canvas.addEventListener("mousemove", (e) => {
+      set_mouse({ x: e.clientX, y: e.clientY });
+    });
 
     setDPI(canvas, 300);
     images_loaded = load_images(make_alphabet_dataset());

@@ -1688,6 +1688,7 @@ var reset_type = function() {
   };
 };
 var img_ratio = 0.78;
+var [mouse, set_mouse] = createSignal({ x: 0, y: 0 });
 var type = {
   x_bound: 0,
   y_bound: 0,
@@ -1756,6 +1757,10 @@ var start_lines = () => {
 };
 set_chapter("1");
 var [next_chapter, set_next_chapter] = createSignal(1);
+createEffect(() => {
+  type.y_bound = mouse().y - type.line * 50;
+  type.x_bound = mouse().x > 300 ? 300 : mouse().x;
+});
 var Root = () => {
   return h("div", {
     style: {
@@ -1770,6 +1775,9 @@ var Frame = () => {
   onMount(() => {
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
+    canvas.addEventListener("mousemove", (e) => {
+      set_mouse({ x: e.clientX, y: e.clientY });
+    });
     setDPI(canvas, 300);
     images_loaded = load_images(make_alphabet_dataset());
     frames_loaded = load_images_as_array(make_frame_dataset("shape", 60));
