@@ -34,10 +34,10 @@ let type = {
   h_bound: 400,
 
   line: 1,
-  line_at: 0,
+  last_line_end: 0,
 
   width: 100,
-  height: function () {
+  height: function() {
     return this.width * img_ratio;
   },
 };
@@ -67,49 +67,6 @@ const disturbance = {
   "5": 10,
   "6": 0,
 };
-
-// sets the current chapter, and starts the lines
-const set_chapter = (number) => {
-  tl.chapter = number;
-  tl.line = 1;
-  tl.resetting = true;
-
-  let cur_audio = new Audio(sequence_1[tl.chapter].audio);
-
-  tl.disturbance = disturbance[tl.chapter];
-  tl.text_index = 0;
-
-  reset_type();
-  start_lines();
-  cur_audio.play();
-};
-
-// starts line of current chapter
-const start_lines = () => {
-  tl.typing = true;
-  tl.text_index = 0;
-  text = sequence_1[tl.chapter].lines[tl.line].text;
-  tl.interval =
-    (sequence_1[tl.chapter].lines[tl.line].end_time -
-      sequence_1[tl.chapter].lines[tl.line].start_time) /
-    text.length;
-
-  reset_type();
-
-  if (tl.line === 1) {
-    for (const [key, value] of Object.entries(sequence_1[tl.chapter].lines)) {
-      if (key !== "1") {
-        setTimeout(() => {
-          tl.line++;
-          start_lines();
-        }, value.start_time);
-      }
-    }
-  }
-};
-
-// to start off
-set_chapter("1");
 
 // this holds the state of the chapter selection bar
 const [next_chapter, set_next_chapter] = s(1);
@@ -151,12 +108,8 @@ const Frame = () => {
     images_loaded = load_images(make_alphabet_dataset());
     frames_loaded = load_images_as_array(make_frame_dataset("shape", 60));
 
-    // frames_loaded = [
-    //   ...frames_loaded,
-    //   ...load_images_as_array(make_frame_dataset("eye", 20)),
-    // ];
-    //
-    // frames_loaded = frames_loaded.sort(() => 0.5 - Math.random());
+    // to start off
+    set_chapter("1");
 
     setTimeout(() => {
       requestAnimationFrame(canvas_loop);
@@ -240,7 +193,6 @@ const canvas_loop = (timestamp) => {
 
   if (elapsed > tl.reset) {
     draw_stats();
-
     if (tl.typing) {
       ctx.globalCompositeOperation = "multiply";
       if (text[tl.text_index] !== " ")
@@ -259,23 +211,12 @@ const canvas_loop = (timestamp) => {
       ctx.fillRect(0, 0, 1200, 800);
     }
   }
-
-  // variable_check();
-
   requestAnimationFrame(canvas_loop);
 };
 
-// increments the text index, if its the last letter,
-// will unlock next chapter and stop the animations
-const increment_index = () => {
-  if (tl.text_index < text.length - 1) tl.text_index++;
-  else {
-    if (tl.typing) {
-      set_next_chapter(parseInt(tl.chapter) + 1);
-    }
-    tl.typing = false;
-  }
-};
+// ---------------
+// Renderers, they're also procedures
+// ---------------
 
 // Drawing of the stats
 const draw_stats = () => {
@@ -309,11 +250,11 @@ const draw_stats = () => {
 // draws the alphabet, the main type stuff
 const draw_alphabet = (letter: string, index) => {
   if (images_loaded) {
-    let x = type.x_bound + ((index - type.line_at) * type.width) / 2;
+    let x = type.x_bound + ((index - type.last_line_end) * type.width) / 2;
 
     if (x > type.w_bound) {
       type.line++;
-      type.line_at = index - 1;
+      type.last_line_end = index - 1;
       x = type.x_bound;
     }
 
@@ -347,6 +288,52 @@ const draw_image_frame = (index) => {
   }
 };
 
+// ----------------
+// Manipulators
+// ----------------
+
+// also a procedure
+// sets the current chapter, and starts the lines
+const set_chapter = (number) => {
+  tl.chapter = number;
+  tl.line = 1;
+  tl.resetting = true;
+
+  let cur_audio = new Audio(sequence_1[tl.chapter].audio);
+
+  tl.disturbance = disturbance[tl.chapter];
+  tl.text_index = 0;
+
+  reset_type();
+  start_lines();
+  cur_audio.play();
+};
+
+// also a procedure
+// starts line of current chapter
+const start_lines = () => {
+  tl.typing = true;
+  tl.text_index = 0;
+  text = sequence_1[tl.chapter].lines[tl.line].text;
+  tl.interval =
+    (sequence_1[tl.chapter].lines[tl.line].end_time -
+      sequence_1[tl.chapter].lines[tl.line].start_time) /
+    text.length;
+
+  reset_type();
+
+  if (tl.line === 1) {
+    for (const [key, value] of Object.entries(sequence_1[tl.chapter].lines)) {
+      if (key !== "1") {
+        setTimeout(() => {
+          tl.line++;
+          start_lines();
+        }, value.start_time);
+      }
+    }
+  }
+};
+
 // resets the parameters of the type
 function reset_type() {
   type = {
@@ -356,14 +343,26 @@ function reset_type() {
     h_bound: 400,
 
     line: 1,
-    line_at: 0,
+    last_line_end: 0,
 
     width: 50,
-    height: function () {
+    height: function() {
       return this.width * img_ratio;
     },
   };
 }
+
+// increments the text index, if its the last letter,
+// will unlock next chapter and stop the animations
+const increment_index = () => {
+  if (tl.text_index < text.length - 1) tl.text_index++;
+  else {
+    if (tl.typing) {
+      set_next_chapter(parseInt(tl.chapter) + 1);
+    }
+    tl.typing = false;
+  }
+};
 
 reset_type();
 render(Root, document.querySelector(".root"));

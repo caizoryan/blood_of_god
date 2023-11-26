@@ -1680,7 +1680,7 @@ var reset_type = function() {
     w_bound: 700,
     h_bound: 400,
     line: 1,
-    line_at: 0,
+    last_line_end: 0,
     width: 50,
     height: function() {
       return this.width * img_ratio;
@@ -1695,7 +1695,7 @@ var type = {
   w_bound: 900,
   h_bound: 400,
   line: 1,
-  line_at: 0,
+  last_line_end: 0,
   width: 100,
   height: function() {
     return this.width * img_ratio;
@@ -1727,35 +1727,6 @@ var disturbance = {
   "5": 10,
   "6": 0
 };
-var set_chapter = (number) => {
-  tl.chapter = number;
-  tl.line = 1;
-  tl.resetting = true;
-  let cur_audio = new Audio(sequence_1[tl.chapter].audio);
-  tl.disturbance = disturbance[tl.chapter];
-  tl.text_index = 0;
-  reset_type();
-  start_lines();
-  cur_audio.play();
-};
-var start_lines = () => {
-  tl.typing = true;
-  tl.text_index = 0;
-  text = sequence_1[tl.chapter].lines[tl.line].text;
-  tl.interval = (sequence_1[tl.chapter].lines[tl.line].end_time - sequence_1[tl.chapter].lines[tl.line].start_time) / text.length;
-  reset_type();
-  if (tl.line === 1) {
-    for (const [key, value] of Object.entries(sequence_1[tl.chapter].lines)) {
-      if (key !== "1") {
-        setTimeout(() => {
-          tl.line++;
-          start_lines();
-        }, value.start_time);
-      }
-    }
-  }
-};
-set_chapter("1");
 var [next_chapter, set_next_chapter] = createSignal(1);
 createEffect(() => {
   type.y_bound = mouse().y - type.line * 50;
@@ -1781,6 +1752,7 @@ var Frame = () => {
     setDPI(canvas, 300);
     images_loaded = load_images(make_alphabet_dataset());
     frames_loaded = load_images_as_array(make_frame_dataset("shape", 60));
+    set_chapter("1");
     setTimeout(() => {
       requestAnimationFrame(canvas_loop);
     }, 100);
@@ -1863,16 +1835,6 @@ var canvas_loop = (timestamp) => {
   }
   requestAnimationFrame(canvas_loop);
 };
-var increment_index = () => {
-  if (tl.text_index < text.length - 1)
-    tl.text_index++;
-  else {
-    if (tl.typing) {
-      set_next_chapter(parseInt(tl.chapter) + 1);
-    }
-    tl.typing = false;
-  }
-};
 var draw_stats = () => {
   ctx.fillStyle = "black";
   ctx.font = "9px monospace";
@@ -1887,10 +1849,10 @@ var draw_stats = () => {
 };
 var draw_alphabet = (letter, index) => {
   if (images_loaded) {
-    let x = type.x_bound + (index - type.line_at) * type.width / 2;
+    let x = type.x_bound + (index - type.last_line_end) * type.width / 2;
     if (x > type.w_bound) {
       type.line++;
-      type.line_at = index - 1;
+      type.last_line_end = index - 1;
       x = type.x_bound;
     }
     let y = type.y_bound + type.line * type.height();
@@ -1907,6 +1869,44 @@ var draw_image_frame = (index) => {
   if (frames_loaded) {
     ctx.globalCompositeOperation = "source-over";
     ctx.drawImage(frames_loaded[index], 150, 150, 856.25, 415.5);
+  }
+};
+var set_chapter = (number) => {
+  tl.chapter = number;
+  tl.line = 1;
+  tl.resetting = true;
+  let cur_audio = new Audio(sequence_1[tl.chapter].audio);
+  tl.disturbance = disturbance[tl.chapter];
+  tl.text_index = 0;
+  reset_type();
+  start_lines();
+  cur_audio.play();
+};
+var start_lines = () => {
+  tl.typing = true;
+  tl.text_index = 0;
+  text = sequence_1[tl.chapter].lines[tl.line].text;
+  tl.interval = (sequence_1[tl.chapter].lines[tl.line].end_time - sequence_1[tl.chapter].lines[tl.line].start_time) / text.length;
+  reset_type();
+  if (tl.line === 1) {
+    for (const [key, value] of Object.entries(sequence_1[tl.chapter].lines)) {
+      if (key !== "1") {
+        setTimeout(() => {
+          tl.line++;
+          start_lines();
+        }, value.start_time);
+      }
+    }
+  }
+};
+var increment_index = () => {
+  if (tl.text_index < text.length - 1)
+    tl.text_index++;
+  else {
+    if (tl.typing) {
+      set_next_chapter(parseInt(tl.chapter) + 1);
+    }
+    tl.typing = false;
   }
 };
 reset_type();
