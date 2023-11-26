@@ -42,22 +42,41 @@ let type = {
   },
 };
 
-let start, previous_time, canvas, ctx, images_loaded, frames_loaded;
+e(() => {
+  type.y_bound = mouse().y - type.line * 50;
+  type.x_bound = mouse().x > 300 ? 300 : mouse().x;
+});
+
+let start, previous_time, canvas, ctx, frames_loaded;
 let text = "";
 
-let tl: any = {};
+let img_db: any = {};
 
-tl.current_time = 0;
-tl.total_time = 0;
-tl.chapter = 1;
-tl.act = 1;
-tl.sequence = 1;
-tl.disturbance = 50;
-tl.interval = 50;
-tl.reset = 50;
-tl.text_index = 0;
-tl.typing = false;
-tl.resetting = false;
+let tl: any = {
+  chapter: 1,
+  act: 1,
+  sequence: 1,
+  disturbance: 50,
+  text_index: 0,
+  typing: false,
+  resetting: false,
+  elapsed: 0,
+};
+
+let timer = {
+  type: {
+    interval: 50,
+    next_draw: 50,
+  },
+  image: {
+    interval: 80,
+    next_draw: 200,
+  },
+  reset: function() {
+    this.type.next_draw = 0;
+    this.image.next_draw = 0;
+  },
+};
 
 const disturbance = {
   "1": 80,
@@ -70,11 +89,6 @@ const disturbance = {
 
 // this holds the state of the chapter selection bar
 const [next_chapter, set_next_chapter] = s(1);
-
-e(() => {
-  type.y_bound = mouse().y - type.line * 50;
-  type.x_bound = mouse().x > 300 ? 300 : mouse().x;
-});
 
 // Main Div that has everything, including our Canvas
 const Root = () => {
@@ -105,11 +119,11 @@ const Frame = () => {
     });
 
     setDPI(canvas, 300);
-    images_loaded = load_images(make_alphabet_dataset());
+    img_db.type = load_images(make_alphabet_dataset());
     frames_loaded = load_images_as_array(make_frame_dataset("shape", 60));
 
     // to start off
-    set_chapter("1");
+    set_chapter("5");
 
     setTimeout(() => {
       requestAnimationFrame(canvas_loop);
@@ -167,56 +181,71 @@ const ChapterSetter = () => {
 let frame_index = 0;
 let frame_beat = 0;
 
-// The loop that runs the animation
-// every frame, this function is called recursively
-const canvas_loop = (timestamp) => {
-  if (!start) start = timestamp;
-  if (tl.resetting) {
-    start = timestamp;
-    tl.reset = 0;
-    tl.resetting = false;
-  }
-  const elapsed = timestamp - start;
-
-  tl.current_time = Math.floor(elapsed / 1000);
-
-  if (tl.chapter >= 5) {
-    if (frame_beat == 4) {
-      if (frame_index >= 58) frame_index = 0;
-      else frame_index++;
-      draw_image_frame(frame_index);
-      frame_beat = 0;
-    } else {
-      frame_beat++;
-    }
-  }
-
-  if (elapsed > tl.reset) {
-    draw_stats();
+const scheduler = {
+  draw_type: function() {
     if (tl.typing) {
       ctx.globalCompositeOperation = "multiply";
       if (text[tl.text_index] !== " ")
         draw_alphabet(text[tl.text_index], tl.text_index + 3);
-      tl.reset += tl.interval;
+      tick.call(timer.type);
       increment_index();
-    } else {
-      ctx.globalCompositeOperation = "source-over";
-      ctx.fillStyle = "rgba(255,255,255,0.01)";
-      ctx.fillRect(0, 0, 1200, 800);
     }
-  } else {
-    if (tl.chapter < 5) {
-      ctx.globalCompositeOperation = "source-over";
-      ctx.fillStyle = "rgba(255,255,255,0.05)";
-      ctx.fillRect(0, 0, 1200, 800);
+  },
+  draw_image: function() {
+    if (frame_index >= 58) frame_index = 0;
+    else frame_index++;
+    draw_image_frame(frame_index);
+    tick.call(timer.image);
+  },
+  draw_stats: function() {
+    draw_stats();
+  },
+  play: function() {
+    scheduler.draw_stats();
+    is_time.call(timer.type) ? scheduler.draw_type() : null;
+    if (tl.chapter >= 5) {
+      is_time.call(timer.image) ? scheduler.draw_image() : null;
     }
-  }
+    not_clear();
+  },
+};
+
+const clock = {
+  tick: function(timestamp) {
+    if (!start) start = timestamp;
+    if (tl.resetting) this.reset(timestamp);
+    tl.elapsed = timestamp - start;
+  },
+
+  reset: function(timestamp) {
+    start = timestamp;
+    timer.reset();
+    tl.resetting = false;
+  },
+};
+
+function is_time() {
+  return tl.elapsed > this.next_draw;
+}
+
+// The loop that runs the animation
+// every frame, this function is called recursively
+const canvas_loop = (timestamp) => {
+  clock.tick(timestamp);
+  scheduler.play();
   requestAnimationFrame(canvas_loop);
 };
 
 // ---------------
-// Renderers, they're also procedures
+// Drawing Procedures
 // ---------------
+
+// clears the canvas, but not completely... actually barely
+const not_clear = () => {
+  ctx.globalCompositeOperation = "source-over";
+  ctx.fillStyle = "rgba(255,255,255,0.05)";
+  ctx.fillRect(0, 0, 1200, 800);
+};
 
 // Drawing of the stats
 const draw_stats = () => {
@@ -231,7 +260,7 @@ const draw_stats = () => {
   console.log(w, h);
 
   ctx.fillText(
-    "current time: ".toUpperCase() + Math.floor(tl.current_time) + "s",
+    "current time: ".toUpperCase() + Math.floor(tl.elapsed / 1000) + "s",
     10,
     50,
   );
@@ -249,7 +278,7 @@ const draw_stats = () => {
 
 // draws the alphabet, the main type stuff
 const draw_alphabet = (letter: string, index) => {
-  if (images_loaded) {
+  if (img_db.type) {
     let x = type.x_bound + ((index - type.last_line_end) * type.width) / 2;
 
     if (x > type.w_bound) {
@@ -265,7 +294,7 @@ const draw_alphabet = (letter: string, index) => {
     if (wr + x > type.x_bound) wr = 0;
 
     ctx.drawImage(
-      images_loaded[letter],
+      img_db.type[letter],
       x + wr,
       y + hr,
       type.width,
@@ -276,7 +305,11 @@ const draw_alphabet = (letter: string, index) => {
 
 const draw_image_frame = (index) => {
   if (frames_loaded) {
-    ctx.globalCompositeOperation = "source-over";
+    if (mouse().x > 300) ctx.globalCompositeOperation = "source-over";
+    if (mouse().x > 600) ctx.globalCompositeOperation = "soft-light";
+    if (mouse().x > 900) ctx.globalCompositeOperation = "exclusion";
+    if (mouse().x > 1000) ctx.globalCompositeOperation = "difference";
+    // ctx.globalCompositeOperation = "exclusion";
     ctx.drawImage(
       frames_loaded[index],
       // Math.random() * 500 + 400, Math.random() * 500,
@@ -289,7 +322,8 @@ const draw_image_frame = (index) => {
 };
 
 // ----------------
-// Manipulators
+// State Manipulators
+// or Procedures
 // ----------------
 
 // also a procedure
@@ -315,7 +349,7 @@ const start_lines = () => {
   tl.typing = true;
   tl.text_index = 0;
   text = sequence_1[tl.chapter].lines[tl.line].text;
-  tl.interval =
+  timer.type.interval =
     (sequence_1[tl.chapter].lines[tl.line].end_time -
       sequence_1[tl.chapter].lines[tl.line].start_time) /
     text.length;
@@ -363,6 +397,10 @@ const increment_index = () => {
     tl.typing = false;
   }
 };
+
+function tick() {
+  this.next_draw += this.interval;
+}
 
 reset_type();
 render(Root, document.querySelector(".root"));

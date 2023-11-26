@@ -1673,6 +1673,9 @@ var sequence_1 = {
 };
 
 // index.ts
+var is_time = function() {
+  return tl.elapsed > this.next_draw;
+};
 var reset_type = function() {
   type = {
     x_bound: 100,
@@ -1686,6 +1689,9 @@ var reset_type = function() {
       return this.width * img_ratio;
     }
   };
+};
+var tick = function() {
+  this.next_draw += this.interval;
 };
 var img_ratio = 0.78;
 var [mouse, set_mouse] = createSignal({ x: 0, y: 0 });
@@ -1701,24 +1707,40 @@ var type = {
     return this.width * img_ratio;
   }
 };
+createEffect(() => {
+  type.y_bound = mouse().y - type.line * 50;
+  type.x_bound = mouse().x > 300 ? 300 : mouse().x;
+});
 var start;
 var canvas;
 var ctx;
-var images_loaded;
 var frames_loaded;
 var text = "";
-var tl = {};
-tl.current_time = 0;
-tl.total_time = 0;
-tl.chapter = 1;
-tl.act = 1;
-tl.sequence = 1;
-tl.disturbance = 50;
-tl.interval = 50;
-tl.reset = 50;
-tl.text_index = 0;
-tl.typing = false;
-tl.resetting = false;
+var img_db = {};
+var tl = {
+  chapter: 1,
+  act: 1,
+  sequence: 1,
+  disturbance: 50,
+  text_index: 0,
+  typing: false,
+  resetting: false,
+  elapsed: 0
+};
+var timer = {
+  type: {
+    interval: 50,
+    next_draw: 50
+  },
+  image: {
+    interval: 80,
+    next_draw: 200
+  },
+  reset: function() {
+    this.type.next_draw = 0;
+    this.image.next_draw = 0;
+  }
+};
 var disturbance = {
   "1": 80,
   "2": 60,
@@ -1728,10 +1750,6 @@ var disturbance = {
   "6": 0
 };
 var [next_chapter, set_next_chapter] = createSignal(1);
-createEffect(() => {
-  type.y_bound = mouse().y - type.line * 50;
-  type.x_bound = mouse().x > 300 ? 300 : mouse().x;
-});
 var Root = () => {
   return h("div", {
     style: {
@@ -1750,9 +1768,9 @@ var Frame = () => {
       set_mouse({ x: e.clientX, y: e.clientY });
     });
     setDPI(canvas, 300);
-    images_loaded = load_images(make_alphabet_dataset());
+    img_db.type = load_images(make_alphabet_dataset());
     frames_loaded = load_images_as_array(make_frame_dataset("shape", 60));
-    set_chapter("1");
+    set_chapter("5");
     setTimeout(() => {
       requestAnimationFrame(canvas_loop);
     }, 100);
@@ -1790,50 +1808,59 @@ var ChapterSetter = () => {
   }));
 };
 var frame_index = 0;
-var frame_beat = 0;
-var canvas_loop = (timestamp) => {
-  if (!start)
-    start = timestamp;
-  if (tl.resetting) {
-    start = timestamp;
-    tl.reset = 0;
-    tl.resetting = false;
-  }
-  const elapsed = timestamp - start;
-  tl.current_time = Math.floor(elapsed / 1000);
-  if (tl.chapter >= 5) {
-    if (frame_beat == 4) {
-      if (frame_index >= 58)
-        frame_index = 0;
-      else
-        frame_index++;
-      draw_image_frame(frame_index);
-      frame_beat = 0;
-    } else {
-      frame_beat++;
-    }
-  }
-  if (elapsed > tl.reset) {
-    draw_stats();
+var scheduler = {
+  draw_type: function() {
     if (tl.typing) {
       ctx.globalCompositeOperation = "multiply";
       if (text[tl.text_index] !== " ")
         draw_alphabet(text[tl.text_index], tl.text_index + 3);
-      tl.reset += tl.interval;
+      tick.call(timer.type);
       increment_index();
-    } else {
-      ctx.globalCompositeOperation = "source-over";
-      ctx.fillStyle = "rgba(255,255,255,0.01)";
-      ctx.fillRect(0, 0, 1200, 800);
     }
-  } else {
-    if (tl.chapter < 5) {
-      ctx.globalCompositeOperation = "source-over";
-      ctx.fillStyle = "rgba(255,255,255,0.05)";
-      ctx.fillRect(0, 0, 1200, 800);
+  },
+  draw_image: function() {
+    if (frame_index >= 58)
+      frame_index = 0;
+    else
+      frame_index++;
+    draw_image_frame(frame_index);
+    tick.call(timer.image);
+  },
+  draw_stats: function() {
+    draw_stats();
+  },
+  play: function() {
+    scheduler.draw_stats();
+    is_time.call(timer.type) && scheduler.draw_type();
+    if (tl.chapter >= 5) {
+      is_time.call(timer.image) && scheduler.draw_image();
     }
+    not_clear();
   }
+};
+var clock = {
+  tick: function(timestamp) {
+    if (!start)
+      start = timestamp;
+    if (tl.resetting)
+      this.reset(timestamp);
+    tl.elapsed = timestamp - start;
+  },
+  reset: function(timestamp) {
+    start = timestamp;
+    timer.reset();
+    tl.resetting = false;
+  }
+};
+var canvas_loop = (timestamp) => {
+  clock.tick(timestamp);
+  scheduler.play();
   requestAnimationFrame(canvas_loop);
+};
+var not_clear = () => {
+  ctx.globalCompositeOperation = "source-over";
+  ctx.fillStyle = "rgba(255,255,255,0.05)";
+  ctx.fillRect(0, 0, 1200, 800);
 };
 var draw_stats = () => {
   ctx.fillStyle = "black";
@@ -1842,13 +1869,13 @@ var draw_stats = () => {
   let w = parseInt(canvas.width) / s;
   let h3 = parseInt(canvas.height) / s;
   console.log(w, h3);
-  ctx.fillText("current time: ".toUpperCase() + Math.floor(tl.current_time) + "s", 10, 50);
+  ctx.fillText("current time: ".toUpperCase() + Math.floor(tl.elapsed / 1000) + "s", 10, 50);
   ctx.fillText("disturbance: ".toUpperCase() + "+-" + Math.floor(tl.disturbance), 10, h3 - 50);
   ctx.fillText("chapter: ".toUpperCase() + tl.chapter, w - 100, 50);
   ctx.fillText("line: ".toUpperCase() + tl.line, w - 100, h3 - 50);
 };
 var draw_alphabet = (letter, index) => {
-  if (images_loaded) {
+  if (img_db.type) {
     let x = type.x_bound + (index - type.last_line_end) * type.width / 2;
     if (x > type.w_bound) {
       type.line++;
@@ -1862,12 +1889,19 @@ var draw_alphabet = (letter, index) => {
     let wr = hr;
     if (wr + x > type.x_bound)
       wr = 0;
-    ctx.drawImage(images_loaded[letter], x + wr, y + hr, type.width, type.height());
+    ctx.drawImage(img_db.type[letter], x + wr, y + hr, type.width, type.height());
   }
 };
 var draw_image_frame = (index) => {
   if (frames_loaded) {
-    ctx.globalCompositeOperation = "source-over";
+    if (mouse().x > 300)
+      ctx.globalCompositeOperation = "source-over";
+    if (mouse().x > 600)
+      ctx.globalCompositeOperation = "soft-light";
+    if (mouse().x > 900)
+      ctx.globalCompositeOperation = "exclusion";
+    if (mouse().x > 1000)
+      ctx.globalCompositeOperation = "difference";
     ctx.drawImage(frames_loaded[index], 150, 150, 856.25, 415.5);
   }
 };
@@ -1886,7 +1920,7 @@ var start_lines = () => {
   tl.typing = true;
   tl.text_index = 0;
   text = sequence_1[tl.chapter].lines[tl.line].text;
-  tl.interval = (sequence_1[tl.chapter].lines[tl.line].end_time - sequence_1[tl.chapter].lines[tl.line].start_time) / text.length;
+  timer.type.interval = (sequence_1[tl.chapter].lines[tl.line].end_time - sequence_1[tl.chapter].lines[tl.line].start_time) / text.length;
   reset_type();
   if (tl.line === 1) {
     for (const [key, value] of Object.entries(sequence_1[tl.chapter].lines)) {
