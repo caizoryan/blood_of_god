@@ -47,18 +47,31 @@ export const sequence_1 = {
         name: "4-flesh twisting",
         frames: 50,
       },
+      {
+        name: "5-neck",
+        frames: 61,
+      },
+      {
+        name: "6-animation of the body",
+        frames: 60,
+      },
     ],
   },
   "3": {
     lines: {
       "1": {
-        text: " A deity sacrificed to make its creation sing",
+        text: "A deity sacrificed to make its creation sing",
         start_time: 0,
         end_time: 3600,
       },
     },
     audio: "audio/chapter3(act1).mp3",
-    images: [],
+    images: [
+      {
+        name: "7-deity",
+        frames: 40,
+      },
+    ],
   },
   "4": {
     lines: {
@@ -69,7 +82,12 @@ export const sequence_1 = {
       },
     },
     audio: "audio/chapter4(act2).mp3",
-    images: [],
+    images: [
+      {
+        name: "act2",
+        frames: 120,
+      },
+    ],
   },
   "5": {
     lines: {
@@ -114,7 +132,12 @@ export const sequence_1 = {
       "6": { text: "complete idea", start_time: 14000, end_time: 17000 },
     },
     audio: "audio/chapter6(act3).mp3",
-    images: [],
+    images: [
+      {
+        name: "shape",
+        frames: 60,
+      },
+    ],
   },
 };
 

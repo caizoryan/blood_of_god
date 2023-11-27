@@ -108,6 +108,7 @@ export const current_line = () => {
 };
 
 export const current_image_set = () => {
+  console.log(current_chapter().images);
   if (current_chapter().images.length === 0) return undefined;
   return current_chapter().images[tl.image_set];
 };
@@ -130,20 +131,20 @@ export const current_total_duration = () => {
 
 export function romanize(num) {
   var lookup = {
-    M: 1000,
-    CM: 900,
-    D: 500,
-    CD: 400,
-    C: 100,
-    XC: 90,
-    L: 50,
-    XL: 40,
-    X: 10,
-    IX: 9,
-    V: 5,
-    IV: 4,
-    I: 1,
-  },
+      M: 1000,
+      CM: 900,
+      D: 500,
+      CD: 400,
+      C: 100,
+      XC: 90,
+      L: 50,
+      XL: 40,
+      X: 10,
+      IX: 9,
+      V: 5,
+      IV: 4,
+      I: 1,
+    },
     roman = "",
     i;
   for (i in lookup) {

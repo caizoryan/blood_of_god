@@ -1539,19 +1539,32 @@ var sequence_1 = {
       {
         name: "4-flesh twisting",
         frames: 50
+      },
+      {
+        name: "5-neck",
+        frames: 61
+      },
+      {
+        name: "6-animation of the body",
+        frames: 60
       }
     ]
   },
   "3": {
     lines: {
       "1": {
-        text: " A deity sacrificed to make its creation sing",
+        text: "A deity sacrificed to make its creation sing",
         start_time: 0,
         end_time: 3600
       }
     },
     audio: "audio/chapter3(act1).mp3",
-    images: []
+    images: [
+      {
+        name: "7-deity",
+        frames: 40
+      }
+    ]
   },
   "4": {
     lines: {
@@ -1562,7 +1575,12 @@ var sequence_1 = {
       }
     },
     audio: "audio/chapter4(act2).mp3",
-    images: []
+    images: [
+      {
+        name: "act2",
+        frames: 120
+      }
+    ]
   },
   "5": {
     lines: {
@@ -1607,7 +1625,12 @@ var sequence_1 = {
       "6": { text: "complete idea", start_time: 14000, end_time: 17000 }
     },
     audio: "audio/chapter6(act3).mp3",
-    images: []
+    images: [
+      {
+        name: "shape",
+        frames: 60
+      }
+    ]
   }
 };
 
@@ -1698,6 +1721,7 @@ var current_chapter = () => {
   return sequence_1[tl.chapter];
 };
 var current_image_set = () => {
+  console.log(current_chapter().images);
   if (current_chapter().images.length === 0)
     return;
   return current_chapter().images[tl.image_set];
@@ -1717,9 +1741,9 @@ var is_time = function() {
 var reset_type = function() {
   type = {
     x_bound: 0,
-    y_bound: 0,
+    y_bound: 500,
     w_bound: 900,
-    h_bound: 900,
+    h_bound: 1200,
     line: 1,
     last_line_end: 0,
     width: 150,
@@ -1737,7 +1761,7 @@ var type = {
   x_bound: 0,
   y_bound: 0,
   w_bound: 900,
-  h_bound: 400,
+  h_bound: 1200,
   line: 1,
   last_line_end: 0,
   width: 500,
@@ -1760,6 +1784,10 @@ var image = {
   size_random_max: 500,
   size_random_min: 200
 };
+createEffect(() => {
+  type.y_bound = mouse().y - type.line * 50;
+  type.x_bound = mouse().x > 100 ? 100 : mouse().x;
+});
 var start;
 var canvas;
 var ctx;
@@ -1792,10 +1820,10 @@ var timer = {
   }
 };
 var disturbance = {
-  "1": 80,
-  "2": 60,
-  "3": 40,
-  "4": 20,
+  "1": 280,
+  "2": 200,
+  "3": 140,
+  "4": 80,
   "5": 10,
   "6": 0
 };
@@ -1814,8 +1842,8 @@ var Frame = () => {
   onMount(() => {
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
-    canvas.addEventListener("mousemove", (e2) => {
-      set_mouse({ x: e2.clientX, y: e2.clientY });
+    canvas.addEventListener("mousemove", (e) => {
+      set_mouse({ x: e.clientX, y: e.clientY });
     });
     setDPI(canvas, 300);
     img_db.type = load_images(make_alphabet_dataset());
@@ -1825,7 +1853,7 @@ var Frame = () => {
         console.log(img_db);
       });
     }
-    set_chapter("1");
+    set_chapter("3");
     setTimeout(() => {
       requestAnimationFrame(canvas_loop);
     }, 100);
@@ -1954,11 +1982,9 @@ var draw_alphabet = (letter, index) => {
       type.last_line_end = index - 1;
       x = type.x_bound;
     }
-    let y = type.y_bound + type.line * type.height();
-    let hr = Math.random() * tl.disturbance;
-    if (Math.random() > 0.5)
-      hr *= -1;
-    let wr = hr;
+    let y = type.y_bound;
+    let hr = Math.random() * tl.disturbance * pos_or_neg();
+    let wr = Math.random() * tl.disturbance * pos_or_neg();
     y += hr;
     x += wr;
     if (y > type.h_bound) {

@@ -34,13 +34,13 @@ let type = {
   x_bound: 0,
   y_bound: 0,
   w_bound: 900,
-  h_bound: 400,
+  h_bound: 1200,
 
   line: 1,
   last_line_end: 0,
 
   width: 500,
-  height: function() {
+  height: function () {
     return this.width * img_ratio;
   },
 };
@@ -49,7 +49,7 @@ let other_img_ratio = 0.501;
 
 let image = {
   w: 200,
-  h: function() {
+  h: function () {
     return this.w * other_img_ratio;
   },
   x: 300,
@@ -62,10 +62,10 @@ let image = {
   size_random_min: 200,
 };
 
-// e(() => {
-//   type.y_bound = mouse().y - type.line * 50;
-//   type.x_bound = mouse().x > 300 ? 300 : mouse().x;
-// });
+e(() => {
+  type.y_bound = mouse().y - type.line * 50;
+  type.x_bound = mouse().x > 100 ? 100 : mouse().x;
+});
 
 let start, canvas, ctx;
 let text = "";
@@ -94,17 +94,17 @@ let timer = {
     interval: 40.1,
     next_draw: 200,
   },
-  reset: function() {
+  reset: function () {
     this.type.next_draw = 0;
     this.image.next_draw = 0;
   },
 };
 
 const disturbance = {
-  "1": 80,
-  "2": 60,
-  "3": 40,
-  "4": 20,
+  "1": 280,
+  "2": 200,
+  "3": 140,
+  "4": 80,
   "5": 10,
   "6": 0,
 };
@@ -153,7 +153,7 @@ const Frame = () => {
       });
     }
     // to start off
-    set_chapter("1");
+    set_chapter("3");
 
     setTimeout(() => {
       requestAnimationFrame(canvas_loop);
@@ -224,7 +224,7 @@ const increment_image_index = () => {
 };
 
 const scheduler = {
-  draw_type: function() {
+  draw_type: function () {
     if (tl.typing) {
       ctx.globalCompositeOperation = "multiply";
       if (text[tl.text_index] !== " ")
@@ -233,17 +233,17 @@ const scheduler = {
       increment_index();
     }
   },
-  draw_image: function() {
+  draw_image: function () {
     if (!current_image_set()) return;
 
     increment_image_index();
     draw_image_frame(tl.image_index);
     tick.call(timer.image);
   },
-  draw_stats: function() {
+  draw_stats: function () {
     draw_stats();
   },
-  play: function() {
+  play: function () {
     scheduler.draw_stats();
     is_time.call(timer.type) ? scheduler.draw_type() : null;
     is_time.call(timer.image) ? scheduler.draw_image() : null;
@@ -252,13 +252,13 @@ const scheduler = {
 };
 
 const clock = {
-  tick: function(timestamp) {
+  tick: function (timestamp) {
     if (!start) start = timestamp;
     if (tl.resetting) this.reset(timestamp);
     tl.elapsed = timestamp - start;
   },
 
-  reset: function(timestamp) {
+  reset: function (timestamp) {
     start = timestamp;
     timer.reset();
     tl.resetting = false;
@@ -311,15 +311,15 @@ const draw_stats = () => {
   ctx.fillText("image size: ".toUpperCase() + image.w + "px", 10, 60);
   ctx.fillText(
     "image spatial randomness: ".toUpperCase() +
-    image.spatial_randomness +
-    "px",
+      image.spatial_randomness +
+      "px",
     10,
     70,
   );
   ctx.fillText(
     "image temporal randomness: ".toUpperCase() +
-    image.temporal_randomness +
-    "%",
+      image.temporal_randomness +
+      "%",
     10,
     80,
   );
@@ -351,10 +351,10 @@ const draw_alphabet = (letter: string, index) => {
       x = type.x_bound;
     }
 
-    let y = type.y_bound + type.line * type.height();
-    let hr = Math.random() * tl.disturbance;
-    if (Math.random() > 0.5) hr *= -1;
-    let wr = hr;
+    let y = type.y_bound;
+    // + type.line * type.height();
+    let hr = Math.random() * tl.disturbance * pos_or_neg();
+    let wr = Math.random() * tl.disturbance * pos_or_neg();
 
     y += hr;
     x += wr;
@@ -395,7 +395,7 @@ const draw_image_frame = (index) => {
 
     image.w = Math.floor(
       Math.random() * (image.size_random_max - image.size_random_min) +
-      image.size_random_min,
+        image.size_random_min,
     );
 
     let w = image.w;
@@ -457,15 +457,15 @@ const start_lines = () => {
 function reset_type() {
   type = {
     x_bound: 0,
-    y_bound: 0,
+    y_bound: 500,
     w_bound: 900,
-    h_bound: 900,
+    h_bound: 1200,
 
     line: 1,
     last_line_end: 0,
 
     width: 150,
-    height: function() {
+    height: function () {
       return this.width * img_ratio;
     },
   };
