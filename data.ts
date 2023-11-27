@@ -8,7 +8,16 @@ export const sequence_1 = {
       },
     },
     audio: "audio/chapter1(act1).mp3",
-    images: ["eye"],
+    images: [
+      {
+        name: "1-eye",
+        frames: 24,
+      },
+      {
+        name: "2-look",
+        frames: 50,
+      },
+    ],
   },
   "2": {
     lines: {
@@ -29,7 +38,16 @@ export const sequence_1 = {
       },
     },
     audio: "audio/chapter2(act1).mp3",
-    images: [],
+    images: [
+      {
+        name: "3-moth",
+        frames: 24,
+      },
+      {
+        name: "4-flesh twisting",
+        frames: 50,
+      },
+    ],
   },
   "3": {
     lines: {
@@ -67,7 +85,12 @@ export const sequence_1 = {
       },
     },
     audio: "audio/chapter5(act3).mp3",
-    images: [],
+    images: [
+      {
+        name: "shape",
+        frames: 60,
+      },
+    ],
   },
   "6": {
     lines: {

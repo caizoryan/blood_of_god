@@ -1,3 +1,6 @@
+import { tl } from ".";
+import { sequence_1 } from "./data";
+
 export function setDPI(canvas, dpi) {
   // Set up CSS size.
   canvas.style.width = canvas.style.width || canvas.width + "px";
@@ -60,7 +63,7 @@ export const make_new_alphabet_dataset = () => {
 export const make_frame_dataset = (folder: string, num: number) => {
   let images: any = [];
 
-  for (let i = 1; i < num; i++) {
+  for (let i = 1; i <= num; i++) {
     images.push({
       key: folder + i,
       src: `./frames/${folder}/_${i}.png`,
@@ -96,22 +99,51 @@ export const load_images = (images: { key: string; src: string }[]) => {
   return alphabets;
 };
 
+export const current_chapter = () => {
+  return sequence_1[tl.chapter];
+};
+
+export const current_line = () => {
+  return current_chapter().lines[tl.line];
+};
+
+export const current_image_set = () => {
+  if (current_chapter().images.length === 0) return undefined;
+  return current_chapter().images[tl.image_set];
+};
+
+export const next_image_set = () => {
+  if (current_chapter().images.length === 0) return undefined;
+  if (tl.image_set + 1 >= current_chapter().images.length) return undefined;
+  return current_chapter().images[tl.image_set + 1];
+};
+
+export const current_total_duration = () => {
+  let current_lines = current_chapter().lines;
+
+  let total_duration = 0;
+  for (let i = 1; i <= tl.line; i++) {
+    if (current_lines[i].end_time > total_duration)
+      total_duration = current_lines[i];
+  }
+};
+
 export function romanize(num) {
   var lookup = {
-      M: 1000,
-      CM: 900,
-      D: 500,
-      CD: 400,
-      C: 100,
-      XC: 90,
-      L: 50,
-      XL: 40,
-      X: 10,
-      IX: 9,
-      V: 5,
-      IV: 4,
-      I: 1,
-    },
+    M: 1000,
+    CM: 900,
+    D: 500,
+    CD: 400,
+    C: 100,
+    XC: 90,
+    L: 50,
+    XL: 40,
+    X: 10,
+    IX: 9,
+    V: 5,
+    IV: 4,
+    I: 1,
+  },
     roman = "",
     i;
   for (i in lookup) {

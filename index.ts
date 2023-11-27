@@ -12,10 +12,13 @@ import {
 import { render } from "./solid/web/web.js";
 import h from "./solid/h/h.js";
 import {
+  current_image_set,
+  current_total_duration,
   load_images,
   load_images_as_array,
   make_alphabet_dataset,
   make_frame_dataset,
+  next_image_set,
   romanize,
   setDPI,
 } from "./helpers.js";
@@ -36,27 +39,46 @@ let type = {
   line: 1,
   last_line_end: 0,
 
-  width: 100,
+  width: 500,
   height: function() {
     return this.width * img_ratio;
   },
 };
 
+let other_img_ratio = 0.501;
+
+let image = {
+  w: 200,
+  h: function() {
+    return this.w * other_img_ratio;
+  },
+  x: 300,
+  y: 300,
+  w_bound: 200,
+  h_bound: 400,
+  spatial_randomness: 500,
+  temporal_randomness: 0.9,
+  size_random_max: 500,
+  size_random_min: 200,
+};
+
 e(() => {
-  type.y_bound = mouse().y - type.line * 50;
-  type.x_bound = mouse().x > 300 ? 300 : mouse().x;
+  // type.y_bound = mouse().y - type.line * 50;
+  // type.x_bound = mouse().x > 300 ? 300 : mouse().x;
 });
 
-let start, previous_time, canvas, ctx, frames_loaded;
+let start, canvas, ctx;
 let text = "";
 
 let img_db: any = {};
 
-let tl: any = {
+export let tl: any = {
   chapter: 1,
   act: 1,
   sequence: 1,
-  disturbance: 50,
+  image_set: 0,
+  image_index: 0,
+  disturbance: 250,
   text_index: 0,
   typing: false,
   resetting: false,
@@ -69,7 +91,7 @@ let timer = {
     next_draw: 50,
   },
   image: {
-    interval: 80,
+    interval: 40.1,
     next_draw: 200,
   },
   reset: function() {
@@ -120,17 +142,29 @@ const Frame = () => {
 
     setDPI(canvas, 300);
     img_db.type = load_images(make_alphabet_dataset());
-    frames_loaded = load_images_as_array(make_frame_dataset("shape", 60));
 
+    for (const value of Object.values(sequence_1)) {
+      value.images.forEach((image) => {
+        img_db[image.name] = load_images_as_array(
+          make_frame_dataset(image.name, image.frames),
+        );
+
+        console.log(img_db);
+      });
+    }
     // to start off
-    set_chapter("5");
+    set_chapter("1");
 
     setTimeout(() => {
       requestAnimationFrame(canvas_loop);
     }, 100);
   });
 
-  return h("canvas", { id: "canvas", width: 1200, height: 800 });
+  return h("canvas", {
+    id: "canvas",
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
 };
 
 // the buttons that appear at the bottom of the screen
@@ -178,8 +212,16 @@ const ChapterSetter = () => {
   );
 };
 
-let frame_index = 0;
-let frame_beat = 0;
+const increment_image_index = () => {
+  if (tl.image_index >= current_image_set().frames - 1) {
+    if (next_image_set()) {
+      tl.image_set++;
+    } else {
+      tl.image_set = 0;
+    }
+    tl.image_index = 0;
+  } else tl.image_index++;
+};
 
 const scheduler = {
   draw_type: function() {
@@ -192,9 +234,10 @@ const scheduler = {
     }
   },
   draw_image: function() {
-    if (frame_index >= 58) frame_index = 0;
-    else frame_index++;
-    draw_image_frame(frame_index);
+    if (!current_image_set()) return;
+
+    increment_image_index();
+    draw_image_frame(tl.image_index);
     tick.call(timer.image);
   },
   draw_stats: function() {
@@ -203,10 +246,8 @@ const scheduler = {
   play: function() {
     scheduler.draw_stats();
     is_time.call(timer.type) ? scheduler.draw_type() : null;
-    if (tl.chapter >= 5) {
-      is_time.call(timer.image) ? scheduler.draw_image() : null;
-    }
-    not_clear();
+    is_time.call(timer.image) ? scheduler.draw_image() : null;
+    if (Math.random() < 0.03) not_clear();
   },
 };
 
@@ -242,8 +283,11 @@ const canvas_loop = (timestamp) => {
 
 // clears the canvas, but not completely... actually barely
 const not_clear = () => {
+  let x_disturbance = Math.random() * image.spatial_randomness * pos_or_neg();
+  let y_distrubance = Math.random() * image.spatial_randomness * pos_or_neg();
+
   ctx.globalCompositeOperation = "source-over";
-  ctx.fillStyle = "rgba(255,255,255,0.05)";
+  ctx.fillStyle = "rgba(255,255,255,1)";
   ctx.fillRect(0, 0, 1200, 800);
 };
 
@@ -257,22 +301,42 @@ const draw_stats = () => {
   let w = parseInt(canvas.width) / s;
   let h = parseInt(canvas.height) / s;
 
-  console.log(w, h);
-
+  // top left
   ctx.fillText(
     "current time: ".toUpperCase() + Math.floor(tl.elapsed / 1000) + "s",
     10,
     50,
   );
 
+  ctx.fillText("image size: ".toUpperCase() + image.w + "px", 10, 60);
+  ctx.fillText(
+    "image spatial randomness: ".toUpperCase() +
+    image.spatial_randomness +
+    "px",
+    10,
+    70,
+  );
+  ctx.fillText(
+    "image temporal randomness: ".toUpperCase() +
+    image.temporal_randomness +
+    "%",
+    10,
+    80,
+  );
+
+  ctx.fillText("image max: ".toUpperCase() + image.w_bound + "px", 10, 90);
+
+  // top right
   ctx.fillText(
     "disturbance: ".toUpperCase() + "+-" + Math.floor(tl.disturbance),
     10,
     h - 50,
   );
 
+  // bottom left
   ctx.fillText("chapter: ".toUpperCase() + tl.chapter, w - 100, 50);
 
+  // bottom right
   ctx.fillText("line: ".toUpperCase() + tl.line, w - 100, h - 50);
 };
 
@@ -291,33 +355,54 @@ const draw_alphabet = (letter: string, index) => {
     let hr = Math.random() * tl.disturbance;
     if (Math.random() > 0.5) hr *= -1;
     let wr = hr;
-    if (wr + x > type.x_bound) wr = 0;
 
-    ctx.drawImage(
-      img_db.type[letter],
-      x + wr,
-      y + hr,
-      type.width,
-      type.height(),
-    );
+    y += hr;
+    x += wr;
+
+    if (y > type.h_bound) {
+      y = type.y_bound - Math.random() * image.spatial_randomness;
+    }
+
+    if (x > type.w_bound) {
+      x = type.x_bound - Math.random() * image.spatial_randomness;
+    }
+
+    ctx.drawImage(img_db.type[letter], x, y, type.width, type.height());
   }
 };
 
+const pos_or_neg = () => (Math.random() > 0.5 ? 1 : -1);
+
 const draw_image_frame = (index) => {
-  if (frames_loaded) {
-    if (mouse().x > 300) ctx.globalCompositeOperation = "source-over";
-    if (mouse().x > 600) ctx.globalCompositeOperation = "soft-light";
-    if (mouse().x > 900) ctx.globalCompositeOperation = "exclusion";
-    if (mouse().x > 1000) ctx.globalCompositeOperation = "difference";
-    // ctx.globalCompositeOperation = "exclusion";
-    ctx.drawImage(
-      frames_loaded[index],
-      // Math.random() * 500 + 400, Math.random() * 500,
-      150,
-      150,
-      3425 / 4,
-      1662 / 4,
+  // skip
+  if (Math.random() < image.temporal_randomness) return;
+  if (current_image_set()) {
+    // if (mouse().x > 300) ctx.globalCompositeOperation = "source-over";
+    // if (mouse().x > 600) ctx.globalCompositeOperation = "soft-light";
+    // if (mouse().x > 700) ctx.globalCompositeOperation = "exclusion";
+    // if (mouse().x > 900) ctx.globalCompositeOperation = "lighten";
+    // if (mouse().x > 1000) ctx.globalCompositeOperation = "difference";
+    //
+    // timer.image.interval = (mouse().y / 1000) * 100;
+
+    let x_disturbance = Math.random() * image.spatial_randomness * pos_or_neg();
+    let y_distrubance = Math.random() * image.spatial_randomness * pos_or_neg();
+
+    let x = image.x + x_disturbance;
+    let y = image.y + y_distrubance;
+
+    ctx.globalCompositeOperation = "source-over";
+
+    image.w = Math.floor(
+      Math.random() * (image.size_random_max - image.size_random_min) +
+      image.size_random_min,
     );
+
+    let w = image.w;
+    let h = image.h();
+
+    // ctx.globalCompositeOperation = "exclusion";
+    ctx.drawImage(img_db[current_image_set().name][index], x, y, w, h);
   }
 };
 
@@ -371,15 +456,15 @@ const start_lines = () => {
 // resets the parameters of the type
 function reset_type() {
   type = {
-    x_bound: 100,
-    y_bound: 300,
-    w_bound: 700,
-    h_bound: 400,
+    x_bound: 0,
+    y_bound: 0,
+    w_bound: 900,
+    h_bound: 900,
 
     line: 1,
     last_line_end: 0,
 
-    width: 50,
+    width: 150,
     height: function() {
       return this.width * img_ratio;
     },

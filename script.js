@@ -1490,6 +1490,127 @@ var h = createHyperScript({
   SVGElements
 });
 
+// data.ts
+var sequence_1 = {
+  "1": {
+    lines: {
+      "1": {
+        text: "I cannot help but look in the mirror and wonder If the blood of a God might save me",
+        start_time: 0,
+        end_time: 5000
+      }
+    },
+    audio: "audio/chapter1(act1).mp3",
+    images: [
+      {
+        name: "1-eye",
+        frames: 24
+      },
+      {
+        name: "2-look",
+        frames: 50
+      }
+    ]
+  },
+  "2": {
+    lines: {
+      "1": {
+        text: "Make my body as its meant to be",
+        start_time: 0,
+        end_time: 2800
+      },
+      "2": {
+        text: "Flesh twisting and weaving under skin",
+        start_time: 2870,
+        end_time: 6000
+      },
+      "3": {
+        text: "Animation of the body The truest image of what that God made",
+        start_time: 6000,
+        end_time: 11000
+      }
+    },
+    audio: "audio/chapter2(act1).mp3",
+    images: [
+      {
+        name: "3-moth",
+        frames: 24
+      },
+      {
+        name: "4-flesh twisting",
+        frames: 50
+      }
+    ]
+  },
+  "3": {
+    lines: {
+      "1": {
+        text: " A deity sacrificed to make its creation sing",
+        start_time: 0,
+        end_time: 3600
+      }
+    },
+    audio: "audio/chapter3(act1).mp3",
+    images: []
+  },
+  "4": {
+    lines: {
+      "1": {
+        text: "Not left unfinished Like a lackluster thesis I am a project worth finishing Even if reality is a medium that cannot hold me",
+        start_time: 0,
+        end_time: 8550
+      }
+    },
+    audio: "audio/chapter4(act2).mp3",
+    images: []
+  },
+  "5": {
+    lines: {
+      "1": {
+        text: "How cruel To pin a moving image down to canvas",
+        start_time: 0,
+        end_time: 3500
+      },
+      "2": {
+        text: "Tell it to be happy with only half itself",
+        start_time: 4300,
+        end_time: 7000
+      }
+    },
+    audio: "audio/chapter5(act3).mp3",
+    images: [
+      {
+        name: "shape",
+        frames: 60
+      }
+    ]
+  },
+  "6": {
+    lines: {
+      "1": { text: "Sometimes", start_time: 0, end_time: 1500 },
+      "2": {
+        text: "In the moment just before I close my eyes I can see them",
+        start_time: 1800,
+        end_time: 5600
+      },
+      "3": { text: "The rest of me", start_time: 6000, end_time: 7000 },
+      "4": {
+        text: "The before and after image",
+        start_time: 7700,
+        end_time: 1e4
+      },
+      "5": {
+        text: "The parts of me forgotten in the still shot The pieces that make me a",
+        start_time: 1e4,
+        end_time: 14000
+      },
+      "6": { text: "complete idea", start_time: 14000, end_time: 17000 }
+    },
+    audio: "audio/chapter6(act3).mp3",
+    images: []
+  }
+};
+
 // helpers.ts
 function setDPI(canvas, dpi) {
   canvas.style.width = canvas.style.width || canvas.width + "px";
@@ -1547,7 +1668,7 @@ var make_alphabet_dataset = () => {
 };
 var make_frame_dataset = (folder, num) => {
   let images = [];
-  for (let i = 1;i < num; i++) {
+  for (let i = 1;i <= num; i++) {
     images.push({
       key: folder + i,
       src: `./frames/${folder}/_${i}.png`
@@ -1573,103 +1694,20 @@ var load_images = (images) => {
   });
   return alphabets;
 };
-
-// data.ts
-var sequence_1 = {
-  "1": {
-    lines: {
-      "1": {
-        text: "I cannot help but look in the mirror and wonder If the blood of a God might save me",
-        start_time: 0,
-        end_time: 5000
-      }
-    },
-    audio: "audio/chapter1(act1).mp3",
-    images: ["eye"]
-  },
-  "2": {
-    lines: {
-      "1": {
-        text: "Make my body as its meant to be",
-        start_time: 0,
-        end_time: 2800
-      },
-      "2": {
-        text: "Flesh twisting and weaving under skin",
-        start_time: 2870,
-        end_time: 6000
-      },
-      "3": {
-        text: "Animation of the body The truest image of what that God made",
-        start_time: 6000,
-        end_time: 11000
-      }
-    },
-    audio: "audio/chapter2(act1).mp3",
-    images: []
-  },
-  "3": {
-    lines: {
-      "1": {
-        text: " A deity sacrificed to make its creation sing",
-        start_time: 0,
-        end_time: 3600
-      }
-    },
-    audio: "audio/chapter3(act1).mp3",
-    images: []
-  },
-  "4": {
-    lines: {
-      "1": {
-        text: "Not left unfinished Like a lackluster thesis I am a project worth finishing Even if reality is a medium that cannot hold me",
-        start_time: 0,
-        end_time: 8550
-      }
-    },
-    audio: "audio/chapter4(act2).mp3",
-    images: []
-  },
-  "5": {
-    lines: {
-      "1": {
-        text: "How cruel To pin a moving image down to canvas",
-        start_time: 0,
-        end_time: 3500
-      },
-      "2": {
-        text: "Tell it to be happy with only half itself",
-        start_time: 4300,
-        end_time: 7000
-      }
-    },
-    audio: "audio/chapter5(act3).mp3",
-    images: []
-  },
-  "6": {
-    lines: {
-      "1": { text: "Sometimes", start_time: 0, end_time: 1500 },
-      "2": {
-        text: "In the moment just before I close my eyes I can see them",
-        start_time: 1800,
-        end_time: 5600
-      },
-      "3": { text: "The rest of me", start_time: 6000, end_time: 7000 },
-      "4": {
-        text: "The before and after image",
-        start_time: 7700,
-        end_time: 1e4
-      },
-      "5": {
-        text: "The parts of me forgotten in the still shot The pieces that make me a",
-        start_time: 1e4,
-        end_time: 14000
-      },
-      "6": { text: "complete idea", start_time: 14000, end_time: 17000 }
-    },
-    audio: "audio/chapter6(act3).mp3",
-    images: []
-  }
+var current_chapter = () => {
+  return sequence_1[tl.chapter];
+};
+var current_image_set = () => {
+  if (current_chapter().images.length === 0)
+    return;
+  return current_chapter().images[tl.image_set];
+};
+var next_image_set = () => {
+  if (current_chapter().images.length === 0)
+    return;
+  if (tl.image_set + 1 >= current_chapter().images.length)
+    return;
+  return current_chapter().images[tl.image_set + 1];
 };
 
 // index.ts
@@ -1678,13 +1716,13 @@ var is_time = function() {
 };
 var reset_type = function() {
   type = {
-    x_bound: 100,
-    y_bound: 300,
-    w_bound: 700,
-    h_bound: 400,
+    x_bound: 0,
+    y_bound: 0,
+    w_bound: 900,
+    h_bound: 900,
     line: 1,
     last_line_end: 0,
-    width: 50,
+    width: 150,
     height: function() {
       return this.width * img_ratio;
     }
@@ -1702,26 +1740,40 @@ var type = {
   h_bound: 400,
   line: 1,
   last_line_end: 0,
-  width: 100,
+  width: 500,
   height: function() {
     return this.width * img_ratio;
   }
 };
+var other_img_ratio = 0.501;
+var image = {
+  w: 200,
+  h: function() {
+    return this.w * other_img_ratio;
+  },
+  x: 300,
+  y: 300,
+  w_bound: 200,
+  h_bound: 400,
+  spatial_randomness: 500,
+  temporal_randomness: 0.9,
+  size_random_max: 500,
+  size_random_min: 200
+};
 createEffect(() => {
-  type.y_bound = mouse().y - type.line * 50;
-  type.x_bound = mouse().x > 300 ? 300 : mouse().x;
 });
 var start;
 var canvas;
 var ctx;
-var frames_loaded;
 var text = "";
 var img_db = {};
 var tl = {
   chapter: 1,
   act: 1,
   sequence: 1,
-  disturbance: 50,
+  image_set: 0,
+  image_index: 0,
+  disturbance: 250,
   text_index: 0,
   typing: false,
   resetting: false,
@@ -1733,7 +1785,7 @@ var timer = {
     next_draw: 50
   },
   image: {
-    interval: 80,
+    interval: 40.1,
     next_draw: 200
   },
   reset: function() {
@@ -1769,13 +1821,22 @@ var Frame = () => {
     });
     setDPI(canvas, 300);
     img_db.type = load_images(make_alphabet_dataset());
-    frames_loaded = load_images_as_array(make_frame_dataset("shape", 60));
-    set_chapter("5");
+    for (const value of Object.values(sequence_1)) {
+      value.images.forEach((image2) => {
+        img_db[image2.name] = load_images_as_array(make_frame_dataset(image2.name, image2.frames));
+        console.log(img_db);
+      });
+    }
+    set_chapter("1");
     setTimeout(() => {
       requestAnimationFrame(canvas_loop);
     }, 100);
   });
-  return h("canvas", { id: "canvas", width: 1200, height: 800 });
+  return h("canvas", {
+    id: "canvas",
+    width: window.innerWidth,
+    height: window.innerHeight
+  });
 };
 var ChapterSetter = () => {
   const chapters = createMemo(() => {
@@ -1807,7 +1868,17 @@ var ChapterSetter = () => {
     }, romanize(parseInt(chapter)))
   }));
 };
-var frame_index = 0;
+var increment_image_index = () => {
+  if (tl.image_index >= current_image_set().frames - 1) {
+    if (next_image_set()) {
+      tl.image_set++;
+    } else {
+      tl.image_set = 0;
+    }
+    tl.image_index = 0;
+  } else
+    tl.image_index++;
+};
 var scheduler = {
   draw_type: function() {
     if (tl.typing) {
@@ -1819,11 +1890,10 @@ var scheduler = {
     }
   },
   draw_image: function() {
-    if (frame_index >= 58)
-      frame_index = 0;
-    else
-      frame_index++;
-    draw_image_frame(frame_index);
+    if (!current_image_set())
+      return;
+    increment_image_index();
+    draw_image_frame(tl.image_index);
     tick.call(timer.image);
   },
   draw_stats: function() {
@@ -1832,10 +1902,9 @@ var scheduler = {
   play: function() {
     scheduler.draw_stats();
     is_time.call(timer.type) && scheduler.draw_type();
-    if (tl.chapter >= 5) {
-      is_time.call(timer.image) && scheduler.draw_image();
-    }
-    not_clear();
+    is_time.call(timer.image) && scheduler.draw_image();
+    if (Math.random() < 0.03)
+      not_clear();
   }
 };
 var clock = {
@@ -1858,8 +1927,10 @@ var canvas_loop = (timestamp) => {
   requestAnimationFrame(canvas_loop);
 };
 var not_clear = () => {
+  let x_disturbance = Math.random() * image.spatial_randomness * pos_or_neg();
+  let y_distrubance = Math.random() * image.spatial_randomness * pos_or_neg();
   ctx.globalCompositeOperation = "source-over";
-  ctx.fillStyle = "rgba(255,255,255,0.05)";
+  ctx.fillStyle = "rgba(255,255,255,1)";
   ctx.fillRect(0, 0, 1200, 800);
 };
 var draw_stats = () => {
@@ -1868,8 +1939,11 @@ var draw_stats = () => {
   let s = 3.125;
   let w = parseInt(canvas.width) / s;
   let h3 = parseInt(canvas.height) / s;
-  console.log(w, h3);
   ctx.fillText("current time: ".toUpperCase() + Math.floor(tl.elapsed / 1000) + "s", 10, 50);
+  ctx.fillText("image size: ".toUpperCase() + image.w + "px", 10, 60);
+  ctx.fillText("image spatial randomness: ".toUpperCase() + image.spatial_randomness + "px", 10, 70);
+  ctx.fillText("image temporal randomness: ".toUpperCase() + image.temporal_randomness + "%", 10, 80);
+  ctx.fillText("image max: ".toUpperCase() + image.w_bound + "px", 10, 90);
   ctx.fillText("disturbance: ".toUpperCase() + "+-" + Math.floor(tl.disturbance), 10, h3 - 50);
   ctx.fillText("chapter: ".toUpperCase() + tl.chapter, w - 100, 50);
   ctx.fillText("line: ".toUpperCase() + tl.line, w - 100, h3 - 50);
@@ -1887,22 +1961,31 @@ var draw_alphabet = (letter, index) => {
     if (Math.random() > 0.5)
       hr *= -1;
     let wr = hr;
-    if (wr + x > type.x_bound)
-      wr = 0;
-    ctx.drawImage(img_db.type[letter], x + wr, y + hr, type.width, type.height());
+    y += hr;
+    x += wr;
+    if (y > type.h_bound) {
+      y = type.y_bound - Math.random() * image.spatial_randomness;
+    }
+    if (x > type.w_bound) {
+      x = type.x_bound - Math.random() * image.spatial_randomness;
+    }
+    ctx.drawImage(img_db.type[letter], x, y, type.width, type.height());
   }
 };
+var pos_or_neg = () => Math.random() > 0.5 ? 1 : -1;
 var draw_image_frame = (index) => {
-  if (frames_loaded) {
-    if (mouse().x > 300)
-      ctx.globalCompositeOperation = "source-over";
-    if (mouse().x > 600)
-      ctx.globalCompositeOperation = "soft-light";
-    if (mouse().x > 900)
-      ctx.globalCompositeOperation = "exclusion";
-    if (mouse().x > 1000)
-      ctx.globalCompositeOperation = "difference";
-    ctx.drawImage(frames_loaded[index], 150, 150, 856.25, 415.5);
+  if (Math.random() < image.temporal_randomness)
+    return;
+  if (current_image_set()) {
+    let x_disturbance = Math.random() * image.spatial_randomness * pos_or_neg();
+    let y_distrubance = Math.random() * image.spatial_randomness * pos_or_neg();
+    let x = image.x + x_disturbance;
+    let y = image.y + y_distrubance;
+    ctx.globalCompositeOperation = "source-over";
+    image.w = Math.floor(Math.random() * (image.size_random_max - image.size_random_min) + image.size_random_min);
+    let w = image.w;
+    let h3 = image.h();
+    ctx.drawImage(img_db[current_image_set().name][index], x, y, w, h3);
   }
 };
 var set_chapter = (number) => {
@@ -1945,3 +2028,6 @@ var increment_index = () => {
 };
 reset_type();
 render(Root, document.querySelector(".root"));
+export {
+  tl
+};
