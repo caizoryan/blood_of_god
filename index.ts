@@ -62,10 +62,10 @@ let image = {
   size_random_min: 200,
 };
 
-e(() => {
-  // type.y_bound = mouse().y - type.line * 50;
-  // type.x_bound = mouse().x > 300 ? 300 : mouse().x;
-});
+// e(() => {
+//   type.y_bound = mouse().y - type.line * 50;
+//   type.x_bound = mouse().x > 300 ? 300 : mouse().x;
+// });
 
 let start, canvas, ctx;
 let text = "";

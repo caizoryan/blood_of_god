@@ -1760,8 +1760,6 @@ var image = {
   size_random_max: 500,
   size_random_min: 200
 };
-createEffect(() => {
-});
 var start;
 var canvas;
 var ctx;
@@ -1816,8 +1814,8 @@ var Frame = () => {
   onMount(() => {
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
-    canvas.addEventListener("mousemove", (e) => {
-      set_mouse({ x: e.clientX, y: e.clientY });
+    canvas.addEventListener("mousemove", (e2) => {
+      set_mouse({ x: e2.clientX, y: e2.clientY });
     });
     setDPI(canvas, 300);
     img_db.type = load_images(make_alphabet_dataset());
