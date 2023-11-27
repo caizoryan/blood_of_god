@@ -14,6 +14,7 @@ import h from "./solid/h/h.js";
 import {
   current_image_set,
   current_total_duration,
+  load_all_images,
   load_images,
   load_images_as_array,
   make_alphabet_dataset,
@@ -56,9 +57,9 @@ let image = {
   y: 300,
   w_bound: 200,
   h_bound: 400,
-  spatial_randomness: 500,
+  spatial_randomness: 400,
   temporal_randomness: 0.9,
-  size_random_max: 500,
+  size_random_max: 400,
   size_random_min: 200,
 };
 
@@ -67,10 +68,10 @@ e(() => {
   type.x_bound = mouse().x > 100 ? 100 : mouse().x;
 });
 
-let start, canvas, ctx;
+let start, canvas, ctx, stat;
 let text = "";
 
-let img_db: any = {};
+export let img_db: any = {};
 
 export let tl: any = {
   chapter: 1,
@@ -85,13 +86,15 @@ export let tl: any = {
   elapsed: 0,
 };
 
+let sequencer = {};
+
 let timer = {
   type: {
     interval: 50,
     next_draw: 50,
   },
   image: {
-    interval: 40.1,
+    interval: 100.1,
     next_draw: 200,
   },
   reset: function () {
@@ -129,42 +132,57 @@ const Root = () => {
   );
 };
 
+function setup() {
+  canvas = document.getElementById("canvas") as HTMLCanvasElement;
+  ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+  let canvas_stats = document.getElementById("canvas_stats");
+  // @ts-ignore
+  stat = canvas_stats?.getContext("2d");
+
+  canvas_stats?.addEventListener("mousemove", (e) => {
+    set_mouse({ x: e.clientX, y: e.clientY });
+  });
+
+  setDPI(canvas, 300);
+  setDPI(canvas_stats, 300);
+
+  load_all_images(img_db);
+
+  // to start off
+  set_chapter("1");
+
+  setTimeout(() => {
+    requestAnimationFrame(canvas_loop);
+  }, 100);
+}
+
 // ----------------
 // This is the canvas
 const Frame = () => {
   onMount(() => {
-    canvas = document.getElementById("canvas") as HTMLCanvasElement;
-    ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-
-    canvas.addEventListener("mousemove", (e) => {
-      set_mouse({ x: e.clientX, y: e.clientY });
-    });
-
-    setDPI(canvas, 300);
-    img_db.type = load_images(make_alphabet_dataset());
-
-    for (const value of Object.values(sequence_1)) {
-      value.images.forEach((image) => {
-        img_db[image.name] = load_images_as_array(
-          make_frame_dataset(image.name, image.frames),
-        );
-
-        console.log(img_db);
-      });
-    }
-    // to start off
-    set_chapter("3");
-
-    setTimeout(() => {
-      requestAnimationFrame(canvas_loop);
-    }, 100);
+    setup();
   });
 
-  return h("canvas", {
-    id: "canvas",
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
+  let style = {
+    position: "absolute",
+    top: "0px",
+    left: "0px",
+  };
+
+  return [
+    h("canvas", {
+      id: "canvas",
+      style,
+      width: window.innerWidth,
+      height: window.innerHeight,
+    }),
+    h("canvas", {
+      id: "canvas_stats",
+      style,
+      width: window.innerWidth,
+      height: window.innerHeight,
+    }),
+  ];
 };
 
 // the buttons that appear at the bottom of the screen
@@ -247,7 +265,7 @@ const scheduler = {
     scheduler.draw_stats();
     is_time.call(timer.type) ? scheduler.draw_type() : null;
     is_time.call(timer.image) ? scheduler.draw_image() : null;
-    if (Math.random() < 0.03) not_clear();
+    Math.random() < 0.03 ? not_clear() : null;
   },
 };
 
@@ -293,8 +311,9 @@ const not_clear = () => {
 
 // Drawing of the stats
 const draw_stats = () => {
-  ctx.fillStyle = "black";
-  ctx.font = "9px monospace";
+  stat.clearRect(0, 0, window.innerWidth, window.innerHeight);
+  stat.fillStyle = "black";
+  stat.font = "9px monospace";
 
   let s = 300 / 96;
 
@@ -302,21 +321,21 @@ const draw_stats = () => {
   let h = parseInt(canvas.height) / s;
 
   // top left
-  ctx.fillText(
+  stat.fillText(
     "current time: ".toUpperCase() + Math.floor(tl.elapsed / 1000) + "s",
     10,
     50,
   );
 
-  ctx.fillText("image size: ".toUpperCase() + image.w + "px", 10, 60);
-  ctx.fillText(
+  stat.fillText("image size: ".toUpperCase() + image.w + "px", 10, 60);
+  stat.fillText(
     "image spatial randomness: ".toUpperCase() +
       image.spatial_randomness +
       "px",
     10,
     70,
   );
-  ctx.fillText(
+  stat.fillText(
     "image temporal randomness: ".toUpperCase() +
       image.temporal_randomness +
       "%",
@@ -324,20 +343,20 @@ const draw_stats = () => {
     80,
   );
 
-  ctx.fillText("image max: ".toUpperCase() + image.w_bound + "px", 10, 90);
+  stat.fillText("image max: ".toUpperCase() + image.w_bound + "px", 10, 90);
 
   // top right
-  ctx.fillText(
+  stat.fillText(
     "disturbance: ".toUpperCase() + "+-" + Math.floor(tl.disturbance),
     10,
     h - 50,
   );
 
   // bottom left
-  ctx.fillText("chapter: ".toUpperCase() + tl.chapter, w - 100, 50);
+  stat.fillText("chapter: ".toUpperCase() + tl.chapter, w - 100, 50);
 
   // bottom right
-  ctx.fillText("line: ".toUpperCase() + tl.line, w - 100, h - 50);
+  stat.fillText("line: ".toUpperCase() + tl.line, w - 100, h - 50);
 };
 
 // draws the alphabet, the main type stuff
@@ -377,14 +396,6 @@ const draw_image_frame = (index) => {
   // skip
   if (Math.random() < image.temporal_randomness) return;
   if (current_image_set()) {
-    // if (mouse().x > 300) ctx.globalCompositeOperation = "source-over";
-    // if (mouse().x > 600) ctx.globalCompositeOperation = "soft-light";
-    // if (mouse().x > 700) ctx.globalCompositeOperation = "exclusion";
-    // if (mouse().x > 900) ctx.globalCompositeOperation = "lighten";
-    // if (mouse().x > 1000) ctx.globalCompositeOperation = "difference";
-    //
-    // timer.image.interval = (mouse().y / 1000) * 100;
-
     let x_disturbance = Math.random() * image.spatial_randomness * pos_or_neg();
     let y_distrubance = Math.random() * image.spatial_randomness * pos_or_neg();
 
@@ -417,6 +428,8 @@ const set_chapter = (number) => {
   tl.chapter = number;
   tl.line = 1;
   tl.resetting = true;
+  tl.image_set = 0;
+  tl.image_index = 0;
 
   let cur_audio = new Audio(sequence_1[tl.chapter].audio);
 
@@ -476,8 +489,9 @@ function reset_type() {
 const increment_index = () => {
   if (tl.text_index < text.length - 1) tl.text_index++;
   else {
-    if (tl.typing) {
-      set_next_chapter(parseInt(tl.chapter) + 1);
+    console.log(current_total_duration());
+    if (tl.typing && current_total_duration() < tl.elapsed + 1000) {
+      setTimeout(() => set_next_chapter(parseInt(tl.chapter) + 1), 500);
     }
     tl.typing = false;
   }

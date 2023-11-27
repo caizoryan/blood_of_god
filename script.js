@@ -1717,11 +1717,18 @@ var load_images = (images) => {
   });
   return alphabets;
 };
+var load_all_images = (db) => {
+  db.type = load_images(make_alphabet_dataset());
+  for (const value of Object.values(sequence_1)) {
+    value.images.forEach((image) => {
+      db[image.name] = load_images_as_array(make_frame_dataset(image.name, image.frames));
+    });
+  }
+};
 var current_chapter = () => {
   return sequence_1[tl.chapter];
 };
 var current_image_set = () => {
-  console.log(current_chapter().images);
   if (current_chapter().images.length === 0)
     return;
   return current_chapter().images[tl.image_set];
@@ -1733,8 +1740,33 @@ var next_image_set = () => {
     return;
   return current_chapter().images[tl.image_set + 1];
 };
+var current_total_duration = () => {
+  let current_lines = Object.values(current_chapter().lines);
+  let total_duration = 0;
+  current_lines.forEach((line) => {
+    if (line.end_time > total_duration)
+      total_duration = line.end_time;
+  });
+  return total_duration;
+};
 
 // index.ts
+var setup = function() {
+  canvas = document.getElementById("canvas");
+  ctx = canvas.getContext("2d");
+  let canvas_stats = document.getElementById("canvas_stats");
+  stat = canvas_stats?.getContext("2d");
+  canvas_stats?.addEventListener("mousemove", (e) => {
+    set_mouse({ x: e.clientX, y: e.clientY });
+  });
+  setDPI(canvas, 300);
+  setDPI(canvas_stats, 300);
+  load_all_images(img_db);
+  set_chapter("1");
+  setTimeout(() => {
+    requestAnimationFrame(canvas_loop);
+  }, 100);
+};
 var is_time = function() {
   return tl.elapsed > this.next_draw;
 };
@@ -1779,9 +1811,9 @@ var image = {
   y: 300,
   w_bound: 200,
   h_bound: 400,
-  spatial_randomness: 500,
+  spatial_randomness: 400,
   temporal_randomness: 0.9,
-  size_random_max: 500,
+  size_random_max: 400,
   size_random_min: 200
 };
 createEffect(() => {
@@ -1791,6 +1823,7 @@ createEffect(() => {
 var start;
 var canvas;
 var ctx;
+var stat;
 var text = "";
 var img_db = {};
 var tl = {
@@ -1811,7 +1844,7 @@ var timer = {
     next_draw: 50
   },
   image: {
-    interval: 40.1,
+    interval: 100.1,
     next_draw: 200
   },
   reset: function() {
@@ -1840,29 +1873,27 @@ var Root = () => {
 };
 var Frame = () => {
   onMount(() => {
-    canvas = document.getElementById("canvas");
-    ctx = canvas.getContext("2d");
-    canvas.addEventListener("mousemove", (e) => {
-      set_mouse({ x: e.clientX, y: e.clientY });
-    });
-    setDPI(canvas, 300);
-    img_db.type = load_images(make_alphabet_dataset());
-    for (const value of Object.values(sequence_1)) {
-      value.images.forEach((image2) => {
-        img_db[image2.name] = load_images_as_array(make_frame_dataset(image2.name, image2.frames));
-        console.log(img_db);
-      });
-    }
-    set_chapter("3");
-    setTimeout(() => {
-      requestAnimationFrame(canvas_loop);
-    }, 100);
+    setup();
   });
-  return h("canvas", {
-    id: "canvas",
-    width: window.innerWidth,
-    height: window.innerHeight
-  });
+  let style2 = {
+    position: "absolute",
+    top: "0px",
+    left: "0px"
+  };
+  return [
+    h("canvas", {
+      id: "canvas",
+      style: style2,
+      width: window.innerWidth,
+      height: window.innerHeight
+    }),
+    h("canvas", {
+      id: "canvas_stats",
+      style: style2,
+      width: window.innerWidth,
+      height: window.innerHeight
+    })
+  ];
 };
 var ChapterSetter = () => {
   const chapters = createMemo(() => {
@@ -1929,8 +1960,7 @@ var scheduler = {
     scheduler.draw_stats();
     is_time.call(timer.type) && scheduler.draw_type();
     is_time.call(timer.image) && scheduler.draw_image();
-    if (Math.random() < 0.03)
-      not_clear();
+    Math.random() < 0.03 && not_clear();
   }
 };
 var clock = {
@@ -1960,19 +1990,20 @@ var not_clear = () => {
   ctx.fillRect(0, 0, 1200, 800);
 };
 var draw_stats = () => {
-  ctx.fillStyle = "black";
-  ctx.font = "9px monospace";
+  stat.clearRect(0, 0, window.innerWidth, window.innerHeight);
+  stat.fillStyle = "black";
+  stat.font = "9px monospace";
   let s = 3.125;
   let w = parseInt(canvas.width) / s;
   let h3 = parseInt(canvas.height) / s;
-  ctx.fillText("current time: ".toUpperCase() + Math.floor(tl.elapsed / 1000) + "s", 10, 50);
-  ctx.fillText("image size: ".toUpperCase() + image.w + "px", 10, 60);
-  ctx.fillText("image spatial randomness: ".toUpperCase() + image.spatial_randomness + "px", 10, 70);
-  ctx.fillText("image temporal randomness: ".toUpperCase() + image.temporal_randomness + "%", 10, 80);
-  ctx.fillText("image max: ".toUpperCase() + image.w_bound + "px", 10, 90);
-  ctx.fillText("disturbance: ".toUpperCase() + "+-" + Math.floor(tl.disturbance), 10, h3 - 50);
-  ctx.fillText("chapter: ".toUpperCase() + tl.chapter, w - 100, 50);
-  ctx.fillText("line: ".toUpperCase() + tl.line, w - 100, h3 - 50);
+  stat.fillText("current time: ".toUpperCase() + Math.floor(tl.elapsed / 1000) + "s", 10, 50);
+  stat.fillText("image size: ".toUpperCase() + image.w + "px", 10, 60);
+  stat.fillText("image spatial randomness: ".toUpperCase() + image.spatial_randomness + "px", 10, 70);
+  stat.fillText("image temporal randomness: ".toUpperCase() + image.temporal_randomness + "%", 10, 80);
+  stat.fillText("image max: ".toUpperCase() + image.w_bound + "px", 10, 90);
+  stat.fillText("disturbance: ".toUpperCase() + "+-" + Math.floor(tl.disturbance), 10, h3 - 50);
+  stat.fillText("chapter: ".toUpperCase() + tl.chapter, w - 100, 50);
+  stat.fillText("line: ".toUpperCase() + tl.line, w - 100, h3 - 50);
 };
 var draw_alphabet = (letter, index) => {
   if (img_db.type) {
@@ -2016,6 +2047,8 @@ var set_chapter = (number) => {
   tl.chapter = number;
   tl.line = 1;
   tl.resetting = true;
+  tl.image_set = 0;
+  tl.image_index = 0;
   let cur_audio = new Audio(sequence_1[tl.chapter].audio);
   tl.disturbance = disturbance[tl.chapter];
   tl.text_index = 0;
@@ -2044,8 +2077,9 @@ var increment_index = () => {
   if (tl.text_index < text.length - 1)
     tl.text_index++;
   else {
-    if (tl.typing) {
-      set_next_chapter(parseInt(tl.chapter) + 1);
+    console.log(current_total_duration());
+    if (tl.typing && current_total_duration() < tl.elapsed + 1000) {
+      setTimeout(() => set_next_chapter(parseInt(tl.chapter) + 1), 500);
     }
     tl.typing = false;
   }
@@ -2053,5 +2087,6 @@ var increment_index = () => {
 reset_type();
 render(Root, document.querySelector(".root"));
 export {
-  tl
+  tl,
+  img_db
 };

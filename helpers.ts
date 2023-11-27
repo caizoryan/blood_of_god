@@ -99,6 +99,18 @@ export const load_images = (images: { key: string; src: string }[]) => {
   return alphabets;
 };
 
+export const load_all_images = (db) => {
+  db.type = load_images(make_alphabet_dataset());
+
+  for (const value of Object.values(sequence_1)) {
+    value.images.forEach((image) => {
+      db[image.name] = load_images_as_array(
+        make_frame_dataset(image.name, image.frames),
+      );
+    });
+  }
+};
+
 export const current_chapter = () => {
   return sequence_1[tl.chapter];
 };
@@ -108,7 +120,6 @@ export const current_line = () => {
 };
 
 export const current_image_set = () => {
-  console.log(current_chapter().images);
   if (current_chapter().images.length === 0) return undefined;
   return current_chapter().images[tl.image_set];
 };
@@ -120,13 +131,13 @@ export const next_image_set = () => {
 };
 
 export const current_total_duration = () => {
-  let current_lines = current_chapter().lines;
+  let current_lines = Object.values(current_chapter().lines);
 
   let total_duration = 0;
-  for (let i = 1; i <= tl.line; i++) {
-    if (current_lines[i].end_time > total_duration)
-      total_duration = current_lines[i];
-  }
+  current_lines.forEach((line) => {
+    if (line.end_time > total_duration) total_duration = line.end_time;
+  });
+  return total_duration;
 };
 
 export function romanize(num) {
