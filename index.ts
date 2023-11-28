@@ -86,7 +86,38 @@ export let tl: any = {
   elapsed: 0,
 };
 
-let sequencer = {};
+let sequencer = {
+  rotation_one: 1,
+  rotation_four: 1,
+
+  next_chapter: function () {
+    if (parseInt(tl.chapter) === 3) this.three();
+    else if (parseInt(tl.chapter) === 4) this.four();
+    else this.just_go_next();
+  },
+
+  just_go_next: function () {
+    set_next_chapter(parseInt(tl.chapter) + 1);
+  },
+
+  three: function () {
+    if (this.rotation_one < 3) {
+      set_next_chapter(1);
+      this.rotation_one++;
+    } else {
+      this.just_go_next();
+    }
+  },
+
+  four: function () {
+    if (this.rotation_four < 3) {
+      set_next_chapter(4);
+      this.rotation_four++;
+    } else {
+      this.just_go_next();
+    }
+  },
+};
 
 let timer = {
   type: {
@@ -149,7 +180,7 @@ function setup() {
   load_all_images(img_db);
 
   // to start off
-  set_chapter("1");
+  set_chapter("3");
 
   setTimeout(() => {
     requestAnimationFrame(canvas_loop);
@@ -489,9 +520,8 @@ function reset_type() {
 const increment_index = () => {
   if (tl.text_index < text.length - 1) tl.text_index++;
   else {
-    console.log(current_total_duration());
     if (tl.typing && current_total_duration() < tl.elapsed + 1000) {
-      setTimeout(() => set_next_chapter(parseInt(tl.chapter) + 1), 500);
+      setTimeout(() => sequencer.next_chapter(), 500);
     }
     tl.typing = false;
   }

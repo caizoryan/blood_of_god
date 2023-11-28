@@ -164,6 +164,5 @@ export function romanize(num) {
       num -= lookup[i];
     }
   }
-  console.log(roman);
   return roman;
 }
