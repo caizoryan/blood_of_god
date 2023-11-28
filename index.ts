@@ -24,6 +24,7 @@ import {
   setDPI,
 } from "./helpers.js";
 import { sequence_1 } from "./data.js";
+import { current_climate } from "./climate";
 
 // the ratio of the image (height / width)
 const img_ratio = 0.78;
@@ -31,7 +32,7 @@ const img_ratio = 0.78;
 const [mouse, set_mouse] = s({ x: 0, y: 0 });
 
 // type variables
-let type = {
+export let type = {
   x_bound: 0,
   y_bound: 0,
   w_bound: 900,
@@ -39,6 +40,7 @@ let type = {
 
   line: 1,
   last_line_end: 0,
+  disturbance: 250,
 
   width: 500,
   height: function () {
@@ -48,7 +50,7 @@ let type = {
 
 let other_img_ratio = 0.501;
 
-let image = {
+export let image = {
   w: 200,
   h: function () {
     return this.w * other_img_ratio;
@@ -61,10 +63,16 @@ let image = {
   temporal_randomness: 0.9,
   size_random_max: 400,
   size_random_min: 200,
+  last_x: 0,
+  last_y: 0,
+  draw_count: 0,
+  lined: false,
+  margin: 40,
+  to_draw: false,
 };
 
 e(() => {
-  type.y_bound = mouse().y - type.line * 50;
+  type.y_bound = mouse().y;
   type.x_bound = mouse().x > 100 ? 100 : mouse().x;
 });
 
@@ -79,14 +87,14 @@ export let tl: any = {
   sequence: 1,
   image_set: 0,
   image_index: 0,
-  disturbance: 250,
   text_index: 0,
   typing: false,
   resetting: false,
   elapsed: 0,
+  clear_rate: 0.03,
 };
 
-let sequencer = {
+export let sequencer = {
   rotation_one: 1,
   rotation_four: 1,
 
@@ -162,30 +170,6 @@ const Root = () => {
     ChapterSetter,
   );
 };
-
-function setup() {
-  canvas = document.getElementById("canvas") as HTMLCanvasElement;
-  ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-  let canvas_stats = document.getElementById("canvas_stats");
-  // @ts-ignore
-  stat = canvas_stats?.getContext("2d");
-
-  canvas_stats?.addEventListener("mousemove", (e) => {
-    set_mouse({ x: e.clientX, y: e.clientY });
-  });
-
-  setDPI(canvas, 300);
-  setDPI(canvas_stats, 300);
-
-  load_all_images(img_db);
-
-  // to start off
-  set_chapter("3");
-
-  setTimeout(() => {
-    requestAnimationFrame(canvas_loop);
-  }, 100);
-}
 
 // ----------------
 // This is the canvas
@@ -286,7 +270,26 @@ const scheduler = {
     if (!current_image_set()) return;
 
     increment_image_index();
-    draw_image_frame(tl.image_index);
+    console.log(image.lined);
+
+    if (!image.lined) {
+      if (Math.random() > image.temporal_randomness)
+        draw_image_frame(tl.image_index);
+    } else {
+      if (image.to_draw) {
+        draw_image_frame_line(tl.image_index);
+
+        // reset state
+        if (image.draw_count > 3) {
+          image.draw_count = 0;
+          image.to_draw = false;
+        }
+      } else {
+        // should we draw?
+        if (Math.random() > image.temporal_randomness) image.to_draw = true;
+      }
+    }
+
     tick.call(timer.image);
   },
   draw_stats: function () {
@@ -294,9 +297,9 @@ const scheduler = {
   },
   play: function () {
     scheduler.draw_stats();
-    is_time.call(timer.type) ? scheduler.draw_type() : null;
-    is_time.call(timer.image) ? scheduler.draw_image() : null;
-    Math.random() < 0.03 ? not_clear() : null;
+    is_it_time_to.call(timer.type) ? scheduler.draw_type() : null;
+    is_it_time_to.call(timer.image) ? scheduler.draw_image() : null;
+    Math.random() < tl.clear_rate ? not_clear() : null;
   },
 };
 
@@ -314,7 +317,7 @@ const clock = {
   },
 };
 
-function is_time() {
+function is_it_time_to() {
   return tl.elapsed > this.next_draw;
 }
 
@@ -374,12 +377,27 @@ const draw_stats = () => {
     80,
   );
 
-  stat.fillText("image max: ".toUpperCase() + image.w_bound + "px", 10, 90);
+  stat.fillText(
+    "image min: ".toUpperCase() + image.size_random_min + "px",
+    10,
+    90,
+  );
+  stat.fillText(
+    "image max: ".toUpperCase() + image.size_random_max + "px",
+    10,
+    100,
+  );
 
   // top right
   stat.fillText(
-    "disturbance: ".toUpperCase() + "+-" + Math.floor(tl.disturbance),
+    "type disturbance: ".toUpperCase() + "+-" + Math.floor(type.disturbance),
     10,
+    h - 50,
+  );
+
+  stat.fillText(
+    "clear rate: ".toUpperCase() + "+-" + tl.clear_rate * 100 + "%",
+    20,
     h - 50,
   );
 
@@ -403,8 +421,8 @@ const draw_alphabet = (letter: string, index) => {
 
     let y = type.y_bound;
     // + type.line * type.height();
-    let hr = Math.random() * tl.disturbance * pos_or_neg();
-    let wr = Math.random() * tl.disturbance * pos_or_neg();
+    let hr = Math.random() * type.disturbance * pos_or_neg();
+    let wr = Math.random() * type.disturbance * pos_or_neg();
 
     y += hr;
     x += wr;
@@ -423,9 +441,42 @@ const draw_alphabet = (letter: string, index) => {
 
 const pos_or_neg = () => (Math.random() > 0.5 ? 1 : -1);
 
+const draw_image_frame_line = (index) => {
+  // skip
+  if (current_image_set()) {
+    let x_disturbance = Math.random() * image.spatial_randomness * pos_or_neg();
+    let y_distrubance = Math.random() * image.spatial_randomness * pos_or_neg();
+
+    let margins = image.draw_count * image.margin;
+    let x = image.x + x_disturbance;
+    let y = image.y + y_distrubance;
+
+    ctx.globalCompositeOperation = "source-over";
+
+    image.w = Math.floor(
+      Math.random() * (image.size_random_max - image.size_random_min) +
+        image.size_random_min,
+    );
+
+    let w = image.w;
+    let h = image.h();
+
+    if (image.draw_count === 0) {
+      image.last_x = x;
+      image.last_y = y;
+    } else {
+      x = image.last_x + w * image.draw_count + margins;
+      y = image.last_y;
+    }
+
+    // ctx.globalCompositeOperation = "exclusion";
+    ctx.drawImage(img_db[current_image_set().name][index], x, y, w, h);
+    image.draw_count++;
+  }
+};
+
 const draw_image_frame = (index) => {
   // skip
-  if (Math.random() < image.temporal_randomness) return;
   if (current_image_set()) {
     let x_disturbance = Math.random() * image.spatial_randomness * pos_or_neg();
     let y_distrubance = Math.random() * image.spatial_randomness * pos_or_neg();
@@ -464,11 +515,11 @@ const set_chapter = (number) => {
 
   let cur_audio = new Audio(sequence_1[tl.chapter].audio);
 
-  tl.disturbance = disturbance[tl.chapter];
+  type.disturbance = disturbance[tl.chapter];
   tl.text_index = 0;
 
-  reset_type();
   start_lines();
+  current_climate.set();
   cur_audio.play();
 };
 
@@ -507,6 +558,7 @@ function reset_type() {
 
     line: 1,
     last_line_end: 0,
+    disturbance: disturbance[tl.chapter],
 
     width: 150,
     height: function () {
@@ -529,6 +581,32 @@ const increment_index = () => {
 
 function tick() {
   this.next_draw += this.interval;
+}
+
+function setup() {
+  canvas = document.getElementById("canvas") as HTMLCanvasElement;
+  ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+  let canvas_stats = document.getElementById("canvas_stats");
+  // @ts-ignore
+  stat = canvas_stats?.getContext("2d");
+
+  canvas_stats?.addEventListener("mousemove", (e) => {
+    set_mouse({ x: e.clientX, y: e.clientY });
+  });
+
+  setDPI(canvas, 300);
+  setDPI(canvas_stats, 300);
+
+  load_all_images(img_db);
+
+  // to start off
+  // sequencer.rotation_one = 3;
+  // sequencer.rotation_four = 3;
+  set_chapter("4");
+
+  setTimeout(() => {
+    requestAnimationFrame(canvas_loop);
+  }, 100);
 }
 
 reset_type();

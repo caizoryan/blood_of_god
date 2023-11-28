@@ -1749,7 +1749,182 @@ var current_total_duration = () => {
   return total_duration;
 };
 
+// climate.ts
+var current_climate = {
+  set: function() {
+    if (parseInt(tl.chapter) === 1 && sequencer.rotation_one === 1)
+      this.one_one();
+    if (parseInt(tl.chapter) === 1 && sequencer.rotation_one === 2)
+      this.one_two();
+    if (parseInt(tl.chapter) === 1 && sequencer.rotation_one === 3)
+      this.one_three();
+    if (parseInt(tl.chapter) === 2 && sequencer.rotation_one === 1)
+      this.two_one();
+    if (parseInt(tl.chapter) === 2 && sequencer.rotation_one === 2)
+      this.two_two();
+    if (parseInt(tl.chapter) === 2 && sequencer.rotation_one === 3)
+      this.two_three();
+    if (parseInt(tl.chapter) === 3 && sequencer.rotation_one === 1)
+      this.three_one();
+    if (parseInt(tl.chapter) === 3 && sequencer.rotation_one === 2)
+      this.three_two();
+    if (parseInt(tl.chapter) === 3 && sequencer.rotation_one === 3)
+      this.three_three();
+    if (parseInt(tl.chapter) === 4 && sequencer.rotation_four === 1)
+      this.four_one();
+    if (parseInt(tl.chapter) === 4 && sequencer.rotation_four === 2)
+      this.four_two();
+    if (parseInt(tl.chapter) === 4 && sequencer.rotation_four === 3)
+      this.four_three();
+    if (parseInt(tl.chapter) === 5)
+      this.five();
+    if (parseInt(tl.chapter) === 6)
+      this.six();
+    if (parseInt(tl.chapter) === 7)
+      this.seven();
+  },
+  one_one: function() {
+    tl.clear_rate = 0.03;
+    type.disturbance = 350;
+    image.spatial_randomness = 700;
+    image.temporal_randomness = 0.94;
+    image.size_random_max = 150;
+    image.size_random_min = 300;
+  },
+  two_one: function() {
+    tl.clear_rate = 0.03;
+    type.disturbance = 300;
+    image.spatial_randomness = 600;
+    image.temporal_randomness = 0.88;
+    image.size_random_min = 150;
+    image.size_random_max = 350;
+  },
+  three_one: function() {
+    tl.clear_rate = 0.03;
+    type.disturbance = 140;
+    image.spatial_randomness = 400;
+    image.temporal_randomness = 0.86;
+    image.size_random_max = 400;
+    image.size_random_min = 200;
+  },
+  one_two: function() {
+    tl.clear_rate = 0.03;
+    image.spatial_randomness = 300;
+    image.temporal_randomness = 0.82;
+    image.size_random_max = 400;
+    image.size_random_min = 250;
+  },
+  two_two: function() {
+    tl.clear_rate = 0.03;
+    image.spatial_randomness = 300;
+    image.temporal_randomness = 0.82;
+    image.size_random_max = 400;
+    image.size_random_min = 250;
+  },
+  three_two: function() {
+    tl.clear_rate = 0.03;
+    image.spatial_randomness = 200;
+    image.temporal_randomness = 0.62;
+    image.size_random_max = 400;
+    image.size_random_min = 300;
+  },
+  one_three: function() {
+    tl.clear_rate = 0.03;
+    image.spatial_randomness = 200;
+    image.temporal_randomness = 0.62;
+    image.x = 50;
+    image.y = 100;
+    image.lined = true;
+    image.size_random_max = 400;
+    image.size_random_min = 300;
+  },
+  two_three: function() {
+    tl.clear_rate = 0.03;
+    image.spatial_randomness = 100;
+    image.temporal_randomness = 0.52;
+    image.x = 50;
+    image.y = 100;
+    image.lined = true;
+    image.size_random_max = 400;
+    image.size_random_min = 300;
+  },
+  three_three: function() {
+    tl.clear_rate = 0.03;
+    image.spatial_randomness = 100;
+    image.temporal_randomness = 0.52;
+    image.x = 50;
+    image.y = 100;
+    image.lined = true;
+    image.size_random_max = 400;
+    image.size_random_min = 350;
+  },
+  four_one: function() {
+    image.lined = true;
+    type.disturbance = 40;
+    image.spatial_randomness = 200;
+    image.temporal_randomness = 0.65;
+    image.margin = -50;
+    image.x = 50;
+    image.y = 200;
+    image.size_random_max = 550;
+    image.size_random_min = 450;
+  },
+  four_two: function() {
+    image.lined = true;
+    type.disturbance = 50;
+    image.spatial_randomness = 150;
+    image.temporal_randomness = 0.4;
+    image.margin = -250;
+    image.size_random_max = 550;
+    image.size_random_min = 450;
+  },
+  four_three: function() {
+    image.lined = true;
+    type.disturbance = 40;
+    image.spatial_randomness = 100;
+    image.temporal_randomness = 0.3;
+    image.margin = -450;
+    image.size_random_max = 550;
+    image.size_random_min = 500;
+  },
+  five: function() {
+    image.lined = true;
+  },
+  six: function() {
+    image.lined = true;
+    tl.clear_rate = 0.004;
+    image.spatial_randomness = 550;
+    image.temporal_randomness = 0;
+    image.size_random_max = 550;
+    image.size_random_min = 450;
+  },
+  seven: function() {
+    image.lined = true;
+  }
+};
+
 // index.ts
+var is_it_time_to = function() {
+  return tl.elapsed > this.next_draw;
+};
+var reset_type = function() {
+  type = {
+    x_bound: 0,
+    y_bound: 500,
+    w_bound: 900,
+    h_bound: 1200,
+    line: 1,
+    last_line_end: 0,
+    disturbance: disturbance[tl.chapter],
+    width: 150,
+    height: function() {
+      return this.width * img_ratio;
+    }
+  };
+};
+var tick = function() {
+  this.next_draw += this.interval;
+};
 var setup = function() {
   canvas = document.getElementById("canvas");
   ctx = canvas.getContext("2d");
@@ -1761,30 +1936,10 @@ var setup = function() {
   setDPI(canvas, 300);
   setDPI(canvas_stats, 300);
   load_all_images(img_db);
-  set_chapter("3");
+  set_chapter("4");
   setTimeout(() => {
     requestAnimationFrame(canvas_loop);
   }, 100);
-};
-var is_time = function() {
-  return tl.elapsed > this.next_draw;
-};
-var reset_type = function() {
-  type = {
-    x_bound: 0,
-    y_bound: 500,
-    w_bound: 900,
-    h_bound: 1200,
-    line: 1,
-    last_line_end: 0,
-    width: 150,
-    height: function() {
-      return this.width * img_ratio;
-    }
-  };
-};
-var tick = function() {
-  this.next_draw += this.interval;
 };
 var img_ratio = 0.78;
 var [mouse, set_mouse] = createSignal({ x: 0, y: 0 });
@@ -1795,6 +1950,7 @@ var type = {
   h_bound: 1200,
   line: 1,
   last_line_end: 0,
+  disturbance: 250,
   width: 500,
   height: function() {
     return this.width * img_ratio;
@@ -1813,10 +1969,16 @@ var image = {
   spatial_randomness: 400,
   temporal_randomness: 0.9,
   size_random_max: 400,
-  size_random_min: 200
+  size_random_min: 200,
+  last_x: 0,
+  last_y: 0,
+  draw_count: 0,
+  lined: false,
+  margin: 40,
+  to_draw: false
 };
 createEffect(() => {
-  type.y_bound = mouse().y - type.line * 50;
+  type.y_bound = mouse().y;
   type.x_bound = mouse().x > 100 ? 100 : mouse().x;
 });
 var start;
@@ -1831,11 +1993,11 @@ var tl = {
   sequence: 1,
   image_set: 0,
   image_index: 0,
-  disturbance: 250,
   text_index: 0,
   typing: false,
   resetting: false,
-  elapsed: 0
+  elapsed: 0,
+  clear_rate: 0.03
 };
 var sequencer = {
   rotation_one: 1,
@@ -1980,7 +2142,22 @@ var scheduler = {
     if (!current_image_set())
       return;
     increment_image_index();
-    draw_image_frame(tl.image_index);
+    console.log(image.lined);
+    if (!image.lined) {
+      if (Math.random() > image.temporal_randomness)
+        draw_image_frame(tl.image_index);
+    } else {
+      if (image.to_draw) {
+        draw_image_frame_line(tl.image_index);
+        if (image.draw_count > 3) {
+          image.draw_count = 0;
+          image.to_draw = false;
+        }
+      } else {
+        if (Math.random() > image.temporal_randomness)
+          image.to_draw = true;
+      }
+    }
     tick.call(timer.image);
   },
   draw_stats: function() {
@@ -1988,9 +2165,9 @@ var scheduler = {
   },
   play: function() {
     scheduler.draw_stats();
-    is_time.call(timer.type) && scheduler.draw_type();
-    is_time.call(timer.image) && scheduler.draw_image();
-    Math.random() < 0.03 && not_clear();
+    is_it_time_to.call(timer.type) && scheduler.draw_type();
+    is_it_time_to.call(timer.image) && scheduler.draw_image();
+    Math.random() < tl.clear_rate && not_clear();
   }
 };
 var clock = {
@@ -2030,8 +2207,10 @@ var draw_stats = () => {
   stat.fillText("image size: ".toUpperCase() + image.w + "px", 10, 60);
   stat.fillText("image spatial randomness: ".toUpperCase() + image.spatial_randomness + "px", 10, 70);
   stat.fillText("image temporal randomness: ".toUpperCase() + image.temporal_randomness + "%", 10, 80);
-  stat.fillText("image max: ".toUpperCase() + image.w_bound + "px", 10, 90);
-  stat.fillText("disturbance: ".toUpperCase() + "+-" + Math.floor(tl.disturbance), 10, h3 - 50);
+  stat.fillText("image min: ".toUpperCase() + image.size_random_min + "px", 10, 90);
+  stat.fillText("image max: ".toUpperCase() + image.size_random_max + "px", 10, 100);
+  stat.fillText("type disturbance: ".toUpperCase() + "+-" + Math.floor(type.disturbance), 10, h3 - 50);
+  stat.fillText("clear rate: ".toUpperCase() + "+-" + tl.clear_rate * 100 + "%", 20, h3 - 50);
   stat.fillText("chapter: ".toUpperCase() + tl.chapter, w - 100, 50);
   stat.fillText("line: ".toUpperCase() + tl.line, w - 100, h3 - 50);
 };
@@ -2044,8 +2223,8 @@ var draw_alphabet = (letter, index) => {
       x = type.x_bound;
     }
     let y = type.y_bound;
-    let hr = Math.random() * tl.disturbance * pos_or_neg();
-    let wr = Math.random() * tl.disturbance * pos_or_neg();
+    let hr = Math.random() * type.disturbance * pos_or_neg();
+    let wr = Math.random() * type.disturbance * pos_or_neg();
     y += hr;
     x += wr;
     if (y > type.h_bound) {
@@ -2058,9 +2237,29 @@ var draw_alphabet = (letter, index) => {
   }
 };
 var pos_or_neg = () => Math.random() > 0.5 ? 1 : -1;
+var draw_image_frame_line = (index) => {
+  if (current_image_set()) {
+    let x_disturbance = Math.random() * image.spatial_randomness * pos_or_neg();
+    let y_distrubance = Math.random() * image.spatial_randomness * pos_or_neg();
+    let margins = image.draw_count * image.margin;
+    let x = image.x + x_disturbance;
+    let y = image.y + y_distrubance;
+    ctx.globalCompositeOperation = "source-over";
+    image.w = Math.floor(Math.random() * (image.size_random_max - image.size_random_min) + image.size_random_min);
+    let w = image.w;
+    let h3 = image.h();
+    if (image.draw_count === 0) {
+      image.last_x = x;
+      image.last_y = y;
+    } else {
+      x = image.last_x + w * image.draw_count + margins;
+      y = image.last_y;
+    }
+    ctx.drawImage(img_db[current_image_set().name][index], x, y, w, h3);
+    image.draw_count++;
+  }
+};
 var draw_image_frame = (index) => {
-  if (Math.random() < image.temporal_randomness)
-    return;
   if (current_image_set()) {
     let x_disturbance = Math.random() * image.spatial_randomness * pos_or_neg();
     let y_distrubance = Math.random() * image.spatial_randomness * pos_or_neg();
@@ -2080,10 +2279,10 @@ var set_chapter = (number) => {
   tl.image_set = 0;
   tl.image_index = 0;
   let cur_audio = new Audio(sequence_1[tl.chapter].audio);
-  tl.disturbance = disturbance[tl.chapter];
+  type.disturbance = disturbance[tl.chapter];
   tl.text_index = 0;
-  reset_type();
   start_lines();
+  current_climate.set();
   cur_audio.play();
 };
 var start_lines = () => {
@@ -2116,6 +2315,9 @@ var increment_index = () => {
 reset_type();
 render(Root, document.querySelector(".root"));
 export {
+  type,
   tl,
-  img_db
+  sequencer,
+  img_db,
+  image
 };
