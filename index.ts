@@ -89,7 +89,7 @@ let text = "";
 export let img_db: any = {};
 
 export let tl: any = {
-  draw_stats: true,
+  draw_stats: false,
   chapter: 1,
   act: 1,
   sequence: 1,
@@ -221,8 +221,9 @@ const Frame = () => {
   onMount(() => {
     setup();
 
-    // document.getElementById("intro")?.addEventListener("ended", () => { set_next_chapter(1);
-    // });
+    document.getElementById("intro")?.addEventListener("ended", () => {
+      set_next_chapter(1);
+    });
   });
 
   let style = {
@@ -232,13 +233,13 @@ const Frame = () => {
   };
 
   return [
-    // h("video", {
-    //   id: "intro",
-    //   src: "intro.mp4",
-    //   autoplay: true,
-    //   loop: false,
-    //   height: window.innerHeight,
-    // }),
+    h("video", {
+      id: "intro",
+      src: "intro.mp4",
+      autoplay: true,
+      loop: false,
+      height: window.innerHeight,
+    }),
     h("canvas", {
       id: "canvas",
       style,
@@ -739,9 +740,7 @@ function setup() {
   load_all_images(img_db);
 
   // to start off
-  sequencer.rotation_one = 3;
-  // sequencer.rotation_four = 3;
-  set_chapter("5");
+  set_chapter("0");
   // sequencer.sequence_two();
 
   // setTimeout(() => { set_next_chapter("1");

@@ -1954,8 +1954,7 @@ var setup = function() {
   setDPI(canvas, 300);
   setDPI(canvas_stats, 300);
   load_all_images(img_db);
-  sequencer.rotation_one = 3;
-  set_chapter("5");
+  set_chapter("0");
   setTimeout(() => {
     requestAnimationFrame(canvas_loop);
   }, 100);
@@ -2008,7 +2007,7 @@ var stat;
 var text = "";
 var img_db = {};
 var tl = {
-  draw_stats: true,
+  draw_stats: false,
   chapter: 1,
   act: 1,
   sequence: 1,
@@ -2119,6 +2118,9 @@ var Root = () => {
 var Frame = () => {
   onMount(() => {
     setup();
+    document.getElementById("intro")?.addEventListener("ended", () => {
+      set_next_chapter(1);
+    });
   });
   let style2 = {
     position: "fixed",
@@ -2126,6 +2128,13 @@ var Frame = () => {
     left: "0px"
   };
   return [
+    h("video", {
+      id: "intro",
+      src: "intro.mp4",
+      autoplay: true,
+      loop: false,
+      height: window.innerHeight
+    }),
     h("canvas", {
       id: "canvas",
       style: style2,
