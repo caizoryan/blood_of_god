@@ -129,13 +129,46 @@ export const sequence_1 = {
         start_time: 10000,
         end_time: 14000,
       },
-      "6": { text: "complete idea", start_time: 14000, end_time: 17000 },
+      "6": { text: "complete idea", start_time: 14000, end_time: 16000 },
     },
     audio: "audio/chapter6(act3).mp3",
     images: [
       {
         name: "shape",
         frames: 60,
+      },
+    ],
+  },
+
+  "7": {
+    lines: {
+      "1": {
+        text: "I am a story told in the wrong medium",
+        start_time: 0,
+        end_time: 2220,
+      },
+      "2": {
+        text: "I am a fact told in interpretive dance I am emotion conveyed via spreadsheet I can never be the whole story",
+        start_time: 3100,
+        end_time: 11180,
+      },
+      "3": {
+        text: "But if you know me long enough",
+        start_time: 12500,
+        end_time: 15000,
+      },
+      "4": {
+        text: "You may get enough stills to piece together the image",
+        start_time: 15400,
+        end_time: 18440,
+      },
+    },
+    audio: "audio/chapter7(act3).mp3",
+    images: [
+      {
+        name: "shape",
+        frames: 60,
+        delay: 13700,
       },
     ],
   },

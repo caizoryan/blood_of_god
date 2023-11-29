@@ -6,7 +6,6 @@
   margin: 0;
   padding: 0;
   font-size: 16px;
-  color: blue;
   user-select: none;
   font-family: "Times New Roman";
 }
@@ -37,4 +36,27 @@ button {
 
 textarea:focus-visible {
   outline: none;
+}
+
+.blinking {
+  color: black;
+  animation: blinking 3s infinite;
+  /* background: #0010ff; */
+  width: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 20px 2px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes blinking {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
 }

@@ -1,4 +1,12 @@
-import { image, sequencer, tl, type } from ".";
+import {
+  canvas,
+  image,
+  img_ratio,
+  other_img_ratio,
+  sequencer,
+  tl,
+  type,
+} from ".";
 
 export let current_climate = {
   set: function () {
@@ -205,7 +213,7 @@ export let current_climate = {
   },
 
   six: function () {
-    image.lined = true;
+    image.lined = false;
     tl.clear_rate = 0.004;
 
     image.spatial_randomness = 550;
@@ -217,7 +225,22 @@ export let current_climate = {
   },
 
   seven: function () {
-    image.lined = true;
+    image.lined = false;
+
+    tl.clear_rate = 0.03;
+
+    image.spatial_randomness = 20;
+    image.temporal_randomness = 0;
+
+    let s = 300 / 96;
+
+    let w = parseInt(canvas.width) / s;
+    let h = parseInt(canvas.height) / s;
+
+    image.size_random_max = 950;
+    image.size_random_min = 950;
+    image.x = w / 2 - image.size_random_max / 2;
+    image.y = h / 2 - (image.size_random_max * other_img_ratio) / 2;
     // back to normal
   },
 };

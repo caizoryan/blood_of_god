@@ -1622,13 +1622,45 @@ var sequence_1 = {
         start_time: 1e4,
         end_time: 14000
       },
-      "6": { text: "complete idea", start_time: 14000, end_time: 17000 }
+      "6": { text: "complete idea", start_time: 14000, end_time: 16000 }
     },
     audio: "audio/chapter6(act3).mp3",
     images: [
       {
         name: "shape",
         frames: 60
+      }
+    ]
+  },
+  "7": {
+    lines: {
+      "1": {
+        text: "I am a story told in the wrong medium",
+        start_time: 0,
+        end_time: 2220
+      },
+      "2": {
+        text: "I am a fact told in interpretive dance I am emotion conveyed via spreadsheet I can never be the whole story",
+        start_time: 3100,
+        end_time: 11180
+      },
+      "3": {
+        text: "But if you know me long enough",
+        start_time: 12500,
+        end_time: 15000
+      },
+      "4": {
+        text: "You may get enough stills to piece together the image",
+        start_time: 15400,
+        end_time: 18440
+      }
+    },
+    audio: "audio/chapter7(act3).mp3",
+    images: [
+      {
+        name: "shape",
+        frames: 60,
+        delay: 13700
       }
     ]
   }
@@ -1738,15 +1770,6 @@ var next_image_set = () => {
   if (tl.image_set + 1 >= current_chapter().images.length)
     return;
   return current_chapter().images[tl.image_set + 1];
-};
-var current_total_duration = () => {
-  let current_lines = Object.values(current_chapter().lines);
-  let total_duration = 0;
-  current_lines.forEach((line) => {
-    if (line.end_time > total_duration)
-      total_duration = line.end_time;
-  });
-  return total_duration;
 };
 
 // climate.ts
@@ -1891,7 +1914,7 @@ var current_climate = {
     image.lined = true;
   },
   six: function() {
-    image.lined = true;
+    image.lined = false;
     tl.clear_rate = 0.004;
     image.spatial_randomness = 550;
     image.temporal_randomness = 0;
@@ -1899,7 +1922,17 @@ var current_climate = {
     image.size_random_min = 450;
   },
   seven: function() {
-    image.lined = true;
+    image.lined = false;
+    tl.clear_rate = 0.03;
+    image.spatial_randomness = 20;
+    image.temporal_randomness = 0;
+    let s = 3.125;
+    let w = parseInt(canvas.width) / s;
+    let h2 = parseInt(canvas.height) / s;
+    image.size_random_max = 950;
+    image.size_random_min = 950;
+    image.x = w / 2 - image.size_random_max / 2;
+    image.y = h2 / 2 - image.size_random_max * other_img_ratio / 2;
   }
 };
 
@@ -1918,7 +1951,7 @@ var reset_type = function() {
     disturbance: disturbance[tl.chapter],
     width: 150,
     height: function() {
-      return this.width * img_ratio;
+      return this.width * img_ratio2;
     }
   };
 };
@@ -1936,12 +1969,12 @@ var setup = function() {
   setDPI(canvas, 300);
   setDPI(canvas_stats, 300);
   load_all_images(img_db);
-  set_chapter("4");
+  set_chapter("1");
   setTimeout(() => {
     requestAnimationFrame(canvas_loop);
   }, 100);
 };
-var img_ratio = 0.78;
+var img_ratio2 = 0.78;
 var [mouse, set_mouse] = createSignal({ x: 0, y: 0 });
 var type = {
   x_bound: 0,
@@ -1953,7 +1986,7 @@ var type = {
   disturbance: 250,
   width: 500,
   height: function() {
-    return this.width * img_ratio;
+    return this.width * img_ratio2;
   }
 };
 var other_img_ratio = 0.501;
@@ -2011,7 +2044,7 @@ var sequencer = {
       this.just_go_next();
   },
   just_go_next: function() {
-    set_next_chapter(parseInt(tl.chapter) + 1);
+    parseInt(tl.chapter) < 7 && set_next_chapter(parseInt(tl.chapter) + 1);
   },
   three: function() {
     if (this.rotation_one < 3) {
@@ -2050,9 +2083,11 @@ var disturbance = {
   "3": 140,
   "4": 80,
   "5": 10,
-  "6": 0
+  "6": 0,
+  "7": 0
 };
 var [next_chapter, set_next_chapter] = createSignal(1);
+var [this_chapter, set_this_chapter] = createSignal(1);
 var Root = () => {
   return h("div", {
     style: {
@@ -2108,6 +2143,7 @@ var ChapterSetter = () => {
   }, () => For({
     each: chapters(),
     children: (chapter) => h("button", {
+      class: createMemo(() => parseInt(chapter) === next_chapter() && parseInt(this_chapter()) !== next_chapter() ? "blinking" : ""),
       style: {
         "margin-right": "30px"
       },
@@ -2128,6 +2164,15 @@ var increment_image_index = () => {
   } else
     tl.image_index++;
 };
+var drawing_neck = () => {
+  if (parseInt(tl.chapter) === 2) {
+    if (parseInt(tl.image_set) === 2) {
+      console.log("neck");
+      return true;
+    }
+  }
+  return false;
+};
 var scheduler = {
   draw_type: function() {
     if (tl.typing) {
@@ -2141,8 +2186,14 @@ var scheduler = {
   draw_image: function() {
     if (!current_image_set())
       return;
+    tick.call(timer.image);
     increment_image_index();
-    console.log(image.lined);
+    if (current_chapter().images[tl.image_set].delay) {
+      if (tl.elapsed < current_chapter().images[tl.image_set].delay)
+        return;
+    }
+    let last_img_ratio = other_img_ratio;
+    drawing_neck() && (other_img_ratio = 0.898);
     if (!image.lined) {
       if (Math.random() > image.temporal_randomness)
         draw_image_frame(tl.image_index);
@@ -2158,7 +2209,7 @@ var scheduler = {
           image.to_draw = true;
       }
     }
-    tick.call(timer.image);
+    other_img_ratio = last_img_ratio;
   },
   draw_stats: function() {
     draw_stats();
@@ -2216,6 +2267,7 @@ var draw_stats = () => {
 };
 var draw_alphabet = (letter, index) => {
   if (img_db.type) {
+    letter = letter.toLowerCase();
     let x = type.x_bound + (index - type.last_line_end) * type.width / 2;
     if (x > type.w_bound) {
       type.line++;
@@ -2273,7 +2325,11 @@ var draw_image_frame = (index) => {
   }
 };
 var set_chapter = (number) => {
+  if (parseInt(number) === 7) {
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+  }
   tl.chapter = number;
+  set_this_chapter(number);
   tl.line = 1;
   tl.resetting = true;
   tl.image_set = 0;
@@ -2284,6 +2340,9 @@ var set_chapter = (number) => {
   start_lines();
   current_climate.set();
   cur_audio.play();
+  cur_audio.onended = (event) => {
+    done_playing();
+  };
 };
 var start_lines = () => {
   tl.typing = true;
@@ -2305,19 +2364,26 @@ var start_lines = () => {
 var increment_index = () => {
   if (tl.text_index < text.length - 1)
     tl.text_index++;
-  else {
-    if (tl.typing && current_total_duration() < tl.elapsed + 1000) {
-      setTimeout(() => sequencer.next_chapter(), 500);
-    }
-    tl.typing = false;
+};
+var done_playing = () => {
+  setTimeout(() => sequencer.next_chapter(), 200);
+  if (parseInt(tl.chapter) === 4 && sequencer.rotation_four < 3) {
+    set_this_chapter(3);
   }
+  tl.typing = false;
 };
 reset_type();
 render(Root, document.querySelector(".root"));
 export {
   type,
   tl,
+  stat,
+  start,
   sequencer,
+  other_img_ratio,
+  img_ratio2 as img_ratio,
   img_db,
-  image
+  image,
+  ctx,
+  canvas
 };

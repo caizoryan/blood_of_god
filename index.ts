@@ -12,6 +12,7 @@ import {
 import { render } from "./solid/web/web.js";
 import h from "./solid/h/h.js";
 import {
+  current_chapter,
   current_image_set,
   current_total_duration,
   load_all_images,
@@ -27,7 +28,7 @@ import { sequence_1 } from "./data.js";
 import { current_climate } from "./climate";
 
 // the ratio of the image (height / width)
-const img_ratio = 0.78;
+export const img_ratio = 0.78;
 
 const [mouse, set_mouse] = s({ x: 0, y: 0 });
 
@@ -48,7 +49,7 @@ export let type = {
   },
 };
 
-let other_img_ratio = 0.501;
+export let other_img_ratio = 0.501;
 
 export let image = {
   w: 200,
@@ -76,7 +77,7 @@ e(() => {
   type.x_bound = mouse().x > 100 ? 100 : mouse().x;
 });
 
-let start, canvas, ctx, stat;
+export let start, canvas, ctx, stat;
 let text = "";
 
 export let img_db: any = {};
@@ -105,7 +106,9 @@ export let sequencer = {
   },
 
   just_go_next: function () {
-    set_next_chapter(parseInt(tl.chapter) + 1);
+    parseInt(tl.chapter) < 7
+      ? set_next_chapter(parseInt(tl.chapter) + 1)
+      : null;
   },
 
   three: function () {
@@ -149,10 +152,12 @@ const disturbance = {
   "4": 80,
   "5": 10,
   "6": 0,
+  "7": 0,
 };
 
 // this holds the state of the chapter selection bar
 const [next_chapter, set_next_chapter] = s(1);
+const [this_chapter, set_this_chapter] = s(1);
 
 // Main Div that has everything, including our Canvas
 const Root = () => {
@@ -232,6 +237,12 @@ const ChapterSetter = () => {
           h(
             "button",
             {
+              class: m(() =>
+                parseInt(chapter) === next_chapter() &&
+                parseInt(this_chapter()) !== next_chapter()
+                  ? "blinking"
+                  : "",
+              ),
               style: {
                 "margin-right": "30px",
               },
@@ -256,6 +267,17 @@ const increment_image_index = () => {
   } else tl.image_index++;
 };
 
+const drawing_neck = () => {
+  if (parseInt(tl.chapter) === 2) {
+    if (parseInt(tl.image_set) === 2) {
+      console.log("neck");
+      return true;
+    }
+  }
+
+  return false;
+};
+
 const scheduler = {
   draw_type: function () {
     if (tl.typing) {
@@ -269,8 +291,15 @@ const scheduler = {
   draw_image: function () {
     if (!current_image_set()) return;
 
+    tick.call(timer.image);
     increment_image_index();
-    console.log(image.lined);
+
+    if (current_chapter().images[tl.image_set].delay) {
+      if (tl.elapsed < current_chapter().images[tl.image_set].delay) return;
+    }
+
+    let last_img_ratio = other_img_ratio;
+    drawing_neck() ? (other_img_ratio = 0.898) : null;
 
     if (!image.lined) {
       if (Math.random() > image.temporal_randomness)
@@ -290,7 +319,7 @@ const scheduler = {
       }
     }
 
-    tick.call(timer.image);
+    other_img_ratio = last_img_ratio;
   },
   draw_stats: function () {
     draw_stats();
@@ -411,6 +440,7 @@ const draw_stats = () => {
 // draws the alphabet, the main type stuff
 const draw_alphabet = (letter: string, index) => {
   if (img_db.type) {
+    letter = letter.toLowerCase();
     let x = type.x_bound + ((index - type.last_line_end) * type.width) / 2;
 
     if (x > type.w_bound) {
@@ -507,7 +537,13 @@ const draw_image_frame = (index) => {
 // also a procedure
 // sets the current chapter, and starts the lines
 const set_chapter = (number) => {
+  // clear entire screen after 6
+  if (parseInt(number) === 7) {
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+  }
+
   tl.chapter = number;
+  set_this_chapter(number);
   tl.line = 1;
   tl.resetting = true;
   tl.image_set = 0;
@@ -521,6 +557,9 @@ const set_chapter = (number) => {
   start_lines();
   current_climate.set();
   cur_audio.play();
+  cur_audio.onended = (event) => {
+    done_playing();
+  };
 };
 
 // also a procedure
@@ -555,7 +594,6 @@ function reset_type() {
     y_bound: 500,
     w_bound: 900,
     h_bound: 1200,
-
     line: 1,
     last_line_end: 0,
     disturbance: disturbance[tl.chapter],
@@ -571,12 +609,18 @@ function reset_type() {
 // will unlock next chapter and stop the animations
 const increment_index = () => {
   if (tl.text_index < text.length - 1) tl.text_index++;
-  else {
-    if (tl.typing && current_total_duration() < tl.elapsed + 1000) {
-      setTimeout(() => sequencer.next_chapter(), 500);
-    }
-    tl.typing = false;
+};
+
+const done_playing = () => {
+  setTimeout(() => sequencer.next_chapter(), 200);
+
+  // if within the rotation of four, signal to blink again
+  // Hacky way to do this, but it works
+  if (parseInt(tl.chapter) === 4 && sequencer.rotation_four < 3) {
+    set_this_chapter(3);
   }
+
+  tl.typing = false;
 };
 
 function tick() {
@@ -602,7 +646,7 @@ function setup() {
   // to start off
   // sequencer.rotation_one = 3;
   // sequencer.rotation_four = 3;
-  set_chapter("4");
+  set_chapter("1");
 
   setTimeout(() => {
     requestAnimationFrame(canvas_loop);
