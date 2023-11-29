@@ -47,7 +47,7 @@ export let type = {
   disturbance: 250,
 
   width: 400,
-  height: function () {
+  height: function() {
     return this.width * img_ratio;
   },
 };
@@ -56,7 +56,7 @@ export let other_img_ratio = 0.501;
 
 export let image = {
   w: 200,
-  h: function () {
+  h: function() {
     return this.w * other_img_ratio;
   },
   x: 300,
@@ -103,7 +103,7 @@ export let sequencer = {
   rotation_one: 1,
   rotation_four: 1,
 
-  sequence_two: function () {
+  sequence_two: function() {
     tl.sequence = 2;
     set_this_chapter(1);
     timer.reset();
@@ -134,19 +134,19 @@ export let sequencer = {
     current_climate.set();
   },
 
-  next_chapter: function () {
+  next_chapter: function() {
     if (parseInt(tl.chapter) === 3) this.three();
     else if (parseInt(tl.chapter) === 4) this.four();
     else this.just_go_next();
   },
 
-  just_go_next: function () {
+  just_go_next: function() {
     parseInt(tl.chapter) < 7
       ? set_next_chapter(parseInt(tl.chapter) + 1)
       : this.sequence_two();
   },
 
-  three: function () {
+  three: function() {
     if (this.rotation_one < 3) {
       set_next_chapter(1);
       this.rotation_one++;
@@ -155,7 +155,7 @@ export let sequencer = {
     }
   },
 
-  four: function () {
+  four: function() {
     if (this.rotation_four < 3) {
       set_next_chapter(4);
       this.rotation_four++;
@@ -174,7 +174,7 @@ let timer = {
     interval: 100.1,
     next_draw: 200,
   },
-  reset: function () {
+  reset: function() {
     this.type.next_draw = 0;
     this.image.next_draw = 0;
   },
@@ -235,7 +235,7 @@ const Frame = () => {
       src: "intro.mp4",
       autoplay: true,
       loop: false,
-      // width: window.innerWidth,
+      height: window.innerHeight,
     }),
     h("canvas", {
       id: "canvas",
@@ -286,7 +286,7 @@ const ChapterSetter = () => {
             {
               class: m(() =>
                 parseInt(chapter) === next_chapter() &&
-                parseInt(this_chapter()) !== next_chapter()
+                  parseInt(this_chapter()) !== next_chapter()
                   ? "blinking"
                   : "",
               ),
@@ -325,7 +325,7 @@ const drawing_neck = () => {
 };
 
 const scheduler = {
-  draw_type: function () {
+  draw_type: function() {
     if (tl.typing) {
       ctx.globalCompositeOperation = "screen";
       if (text[tl.text_index] !== " ")
@@ -334,7 +334,7 @@ const scheduler = {
       increment_index();
     }
   },
-  draw_image: function () {
+  draw_image: function() {
     if (!current_chapter()) return;
     if (!current_image_set()) return;
     if (tl.clear_rate === 1)
@@ -370,10 +370,10 @@ const scheduler = {
 
     other_img_ratio = last_img_ratio;
   },
-  draw_stats: function () {
+  draw_stats: function() {
     if (tl.draw_stats) draw_stats();
   },
-  play: function () {
+  play: function() {
     scheduler.draw_stats();
     is_it_time_to.call(timer.type) ? scheduler.draw_type() : null;
     is_it_time_to.call(timer.image) ? scheduler.draw_image() : null;
@@ -383,13 +383,13 @@ const scheduler = {
 };
 
 const clock = {
-  tick: function (timestamp) {
+  tick: function(timestamp) {
     if (!start) start = timestamp;
     if (tl.resetting) this.reset(timestamp);
     tl.elapsed = timestamp - start;
   },
 
-  reset: function (timestamp) {
+  reset: function(timestamp) {
     start = timestamp;
     timer.reset();
     tl.resetting = false;
@@ -443,15 +443,15 @@ const draw_stats = () => {
   stat.fillText("image size: ".toUpperCase() + image.w + "px", 10, 60);
   stat.fillText(
     "image spatial randomness: ".toUpperCase() +
-      image.spatial_randomness +
-      "px",
+    image.spatial_randomness +
+    "px",
     10,
     70,
   );
   stat.fillText(
     "image temporal randomness: ".toUpperCase() +
-      image.temporal_randomness +
-      "%",
+    image.temporal_randomness +
+    "%",
     10,
     80,
   );
@@ -536,7 +536,7 @@ const draw_image_frame_line = (index) => {
 
     image.w = Math.floor(
       Math.random() * (image.size_random_max - image.size_random_min) +
-        image.size_random_min,
+      image.size_random_min,
     );
 
     let w = image.w;
@@ -569,7 +569,7 @@ const draw_image_frame = (index) => {
 
     image.w = Math.floor(
       Math.random() * (image.size_random_max - image.size_random_min) +
-        image.size_random_min,
+      image.size_random_min,
     );
 
     let w = image.w;
@@ -653,7 +653,7 @@ function reset_type() {
     disturbance: disturbance[tl.chapter],
 
     width: 150,
-    height: function () {
+    height: function() {
       return this.width * img_ratio;
     },
   };

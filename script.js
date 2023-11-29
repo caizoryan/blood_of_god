@@ -2142,7 +2142,8 @@ var Frame = () => {
       id: "intro",
       src: "intro.mp4",
       autoplay: true,
-      loop: false
+      loop: false,
+      height: window.innerHeight
     }),
     h("canvas", {
       id: "canvas",
