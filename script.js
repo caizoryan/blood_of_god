@@ -1849,10 +1849,7 @@ var current_climate = {
   one_three: function() {
     tl.clear_rate = 0.03;
     image.spatial_randomness = 200;
-    image.temporal_randomness = 0.62;
-    image.x = 50;
-    image.y = 100;
-    image.lined = true;
+    image.temporal_randomness = 0.52;
     image.size_random_max = 400;
     image.size_random_min = 300;
   },
@@ -1860,9 +1857,6 @@ var current_climate = {
     tl.clear_rate = 0.03;
     image.spatial_randomness = 100;
     image.temporal_randomness = 0.52;
-    image.x = 50;
-    image.y = 100;
-    image.lined = true;
     image.size_random_max = 400;
     image.size_random_min = 300;
   },
@@ -1870,27 +1864,21 @@ var current_climate = {
     tl.clear_rate = 0.03;
     image.spatial_randomness = 100;
     image.temporal_randomness = 0.52;
-    image.x = 50;
-    image.y = 100;
-    image.lined = true;
     image.size_random_max = 400;
     image.size_random_min = 350;
   },
   four_one: function() {
-    image.lined = true;
     type.disturbance = 40;
-    image.spatial_randomness = 200;
-    image.temporal_randomness = 0.65;
-    image.margin = -50;
-    image.x = 50;
-    image.y = 200;
+    image.spatial_randomness = 180;
+    image.temporal_randomness = 0.25;
+    image.margin = 50;
     image.size_random_max = 550;
     image.size_random_min = 450;
   },
   four_two: function() {
     image.lined = true;
     type.disturbance = 50;
-    image.spatial_randomness = 150;
+    image.spatial_randomness = 250;
     image.temporal_randomness = 0.4;
     image.margin = -250;
     image.size_random_max = 550;
@@ -1901,7 +1889,9 @@ var current_climate = {
     type.disturbance = 40;
     image.spatial_randomness = 100;
     image.temporal_randomness = 0.3;
-    image.margin = -450;
+    image.x = 50;
+    image.y = 150;
+    image.margin = 50;
     image.size_random_max = 550;
     image.size_random_min = 500;
   },
@@ -1964,11 +1954,13 @@ var setup = function() {
   setDPI(canvas, 300);
   setDPI(canvas_stats, 300);
   load_all_images(img_db);
-  set_chapter("0");
+  sequencer.rotation_one = 3;
+  set_chapter("4");
   setTimeout(() => {
     requestAnimationFrame(canvas_loop);
   }, 100);
 };
+var loops = 0;
 var img_ratio2 = 1.27;
 var [mouse, set_mouse] = createSignal({ x: 0, y: 0 });
 var type = {
@@ -2016,7 +2008,7 @@ var stat;
 var text = "";
 var img_db = {};
 var tl = {
-  draw_stats: false,
+  draw_stats: true,
   chapter: 1,
   act: 1,
   sequence: 1,
@@ -2045,7 +2037,6 @@ var sequencer = {
     tl.typing = false;
     tl.elapsed = 0;
     tl.clear_rate = 1;
-    tl.draw_stats = false;
     type.disturbance = 0;
     image.spatial_randomness = 0;
     timer.image.interval = 50;
@@ -2128,9 +2119,6 @@ var Root = () => {
 var Frame = () => {
   onMount(() => {
     setup();
-    document.getElementById("intro")?.addEventListener("ended", () => {
-      set_next_chapter(1);
-    });
   });
   let style2 = {
     position: "fixed",
@@ -2138,13 +2126,6 @@ var Frame = () => {
     left: "0px"
   };
   return [
-    h("video", {
-      id: "intro",
-      src: "intro.mp4",
-      autoplay: true,
-      loop: false,
-      height: window.innerHeight
-    }),
     h("canvas", {
       id: "canvas",
       style: style2,
@@ -2261,6 +2242,10 @@ var scheduler = {
     is_it_time_to.call(timer.image) && scheduler.draw_image();
     if (tl.chapter > 0 && tl.sequence === 1)
       Math.random() < tl.clear_rate && not_clear();
+    if (loops === 2) {
+      console.log("done");
+      document.querySelectorAll("audio").forEach((el) => el.pause());
+    }
   }
 };
 var clock = {
@@ -2296,19 +2281,23 @@ var draw_stats = () => {
   let s = 3.125;
   let w = parseInt(canvas.width) / s;
   let h3 = parseInt(canvas.height) / s;
-  stat.fillText("current time: ".toUpperCase() + Math.floor(tl.elapsed / 1000) + "s", 10, 50);
-  stat.fillText("image size: ".toUpperCase() + image.w + "px", 10, 60);
-  stat.fillText("image spatial randomness: ".toUpperCase() + image.spatial_randomness + "px", 10, 70);
-  stat.fillText("image temporal randomness: ".toUpperCase() + image.temporal_randomness + "%", 10, 80);
-  stat.fillText("image min: ".toUpperCase() + image.size_random_min + "px", 10, 90);
-  stat.fillText("image max: ".toUpperCase() + image.size_random_max + "px", 10, 100);
-  stat.fillText("type disturbance: ".toUpperCase() + "+-" + Math.floor(type.disturbance), 10, h3 - 50);
-  stat.fillText("clear rate: ".toUpperCase() + "+-" + tl.clear_rate * 100 + "%", 10, h3 - 60);
-  if (tl.chapter === 0)
-    stat.fillText("prologue".toUpperCase(), w - 100, 50);
-  else
-    stat.fillText("chapter: ".toUpperCase() + tl.chapter, w - 100, 50);
-  stat.fillText("line: ".toUpperCase() + tl.line, w - 100, h3 - 50);
+  if (tl.sequence === 1) {
+    stat.fillText("current time: ".toUpperCase() + Math.floor(tl.elapsed / 1000) + "s", 10, 50);
+    stat.fillText("image size: ".toUpperCase() + image.w + "px", 10, 60);
+    stat.fillText("image spatial randomness: ".toUpperCase() + image.spatial_randomness + "px", 10, 70);
+    stat.fillText("image temporal randomness: ".toUpperCase() + image.temporal_randomness + "%", 10, 80);
+    stat.fillText("image min: ".toUpperCase() + image.size_random_min + "px", 10, 90);
+    stat.fillText("image max: ".toUpperCase() + image.size_random_max + "px", 10, 100);
+    stat.fillText("type disturbance: ".toUpperCase() + "+-" + Math.floor(type.disturbance), 10, h3 - 50);
+    stat.fillText("clear rate: ".toUpperCase() + "+-" + tl.clear_rate * 100 + "%", 10, h3 - 60);
+    if (tl.chapter === 0)
+      stat.fillText("prologue".toUpperCase(), w - 100, 50);
+    else
+      stat.fillText("chapter: ".toUpperCase() + tl.chapter, w - 100, 50);
+    stat.fillText("line: ".toUpperCase() + tl.line, w - 100, h3 - 50);
+  } else {
+    stat.fillText("loops: ".toUpperCase() + loops, w - 100, h3 - 50);
+  }
 };
 var draw_alphabet = (letter, index) => {
   if (img_db.type) {
@@ -2415,6 +2404,8 @@ var increment_index = () => {
     tl.text_index++;
 };
 var done_playing = () => {
+  if (loops === 20)
+    location.reload();
   if (parseInt(tl.sequence) === 2 && parseInt(tl.chapter) < 7) {
     set_chapter(parseInt(tl.chapter) + 1);
   } else
@@ -2423,6 +2414,7 @@ var done_playing = () => {
     set_this_chapter(3);
   }
   if (parseInt(tl.chapter) === 7) {
+    loops++;
     sequencer.sequence_two();
   }
   tl.typing = false;

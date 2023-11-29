@@ -27,6 +27,9 @@ import {
 import { sequence_1 } from "./data.js";
 import { current_climate } from "./climate";
 
+let loops = 0;
+let audio_played = 0;
+
 // the ratio of the image (height / width)
 //
 // for white alophebet
@@ -86,7 +89,7 @@ let text = "";
 export let img_db: any = {};
 
 export let tl: any = {
-  draw_stats: false,
+  draw_stats: true,
   chapter: 1,
   act: 1,
   sequence: 1,
@@ -117,7 +120,7 @@ export let sequencer = {
     tl.typing = false;
     tl.elapsed = 0;
     tl.clear_rate = 1;
-    tl.draw_stats = false;
+    // tl.draw_stats = false;
     type.disturbance = 0;
     image.spatial_randomness = 0;
     timer.image.interval = 50;
@@ -218,9 +221,8 @@ const Frame = () => {
   onMount(() => {
     setup();
 
-    document.getElementById("intro")?.addEventListener("ended", () => {
-      set_next_chapter(1);
-    });
+    // document.getElementById("intro")?.addEventListener("ended", () => { set_next_chapter(1);
+    // });
   });
 
   let style = {
@@ -230,13 +232,13 @@ const Frame = () => {
   };
 
   return [
-    h("video", {
-      id: "intro",
-      src: "intro.mp4",
-      autoplay: true,
-      loop: false,
-      height: window.innerHeight,
-    }),
+    // h("video", {
+    //   id: "intro",
+    //   src: "intro.mp4",
+    //   autoplay: true,
+    //   loop: false,
+    //   height: window.innerHeight,
+    // }),
     h("canvas", {
       id: "canvas",
       style,
@@ -379,6 +381,11 @@ const scheduler = {
     is_it_time_to.call(timer.image) ? scheduler.draw_image() : null;
     if (tl.chapter > 0 && tl.sequence === 1)
       Math.random() < tl.clear_rate ? not_clear() : null;
+
+    if (loops === 2) {
+      console.log("done");
+      document.querySelectorAll("audio").forEach((el) => el.pause());
+    }
   },
 };
 
@@ -433,59 +440,63 @@ const draw_stats = () => {
   let w = parseInt(canvas.width) / s;
   let h = parseInt(canvas.height) / s;
 
-  // top left
-  stat.fillText(
-    "current time: ".toUpperCase() + Math.floor(tl.elapsed / 1000) + "s",
-    10,
-    50,
-  );
+  if (tl.sequence === 1) {
+    // top left
+    stat.fillText(
+      "current time: ".toUpperCase() + Math.floor(tl.elapsed / 1000) + "s",
+      10,
+      50,
+    );
 
-  stat.fillText("image size: ".toUpperCase() + image.w + "px", 10, 60);
-  stat.fillText(
-    "image spatial randomness: ".toUpperCase() +
-    image.spatial_randomness +
-    "px",
-    10,
-    70,
-  );
-  stat.fillText(
-    "image temporal randomness: ".toUpperCase() +
-    image.temporal_randomness +
-    "%",
-    10,
-    80,
-  );
+    stat.fillText("image size: ".toUpperCase() + image.w + "px", 10, 60);
+    stat.fillText(
+      "image spatial randomness: ".toUpperCase() +
+      image.spatial_randomness +
+      "px",
+      10,
+      70,
+    );
+    stat.fillText(
+      "image temporal randomness: ".toUpperCase() +
+      image.temporal_randomness +
+      "%",
+      10,
+      80,
+    );
 
-  stat.fillText(
-    "image min: ".toUpperCase() + image.size_random_min + "px",
-    10,
-    90,
-  );
-  stat.fillText(
-    "image max: ".toUpperCase() + image.size_random_max + "px",
-    10,
-    100,
-  );
+    stat.fillText(
+      "image min: ".toUpperCase() + image.size_random_min + "px",
+      10,
+      90,
+    );
+    stat.fillText(
+      "image max: ".toUpperCase() + image.size_random_max + "px",
+      10,
+      100,
+    );
 
-  // top right
-  stat.fillText(
-    "type disturbance: ".toUpperCase() + "+-" + Math.floor(type.disturbance),
-    10,
-    h - 50,
-  );
+    // top right
+    stat.fillText(
+      "type disturbance: ".toUpperCase() + "+-" + Math.floor(type.disturbance),
+      10,
+      h - 50,
+    );
 
-  stat.fillText(
-    "clear rate: ".toUpperCase() + "+-" + tl.clear_rate * 100 + "%",
-    10,
-    h - 60,
-  );
+    stat.fillText(
+      "clear rate: ".toUpperCase() + "+-" + tl.clear_rate * 100 + "%",
+      10,
+      h - 60,
+    );
 
-  // bottom left
-  if (tl.chapter === 0) stat.fillText("prologue".toUpperCase(), w - 100, 50);
-  else stat.fillText("chapter: ".toUpperCase() + tl.chapter, w - 100, 50);
+    // bottom left
+    if (tl.chapter === 0) stat.fillText("prologue".toUpperCase(), w - 100, 50);
+    else stat.fillText("chapter: ".toUpperCase() + tl.chapter, w - 100, 50);
 
-  // bottom right
-  stat.fillText("line: ".toUpperCase() + tl.line, w - 100, h - 50);
+    // bottom right
+    stat.fillText("line: ".toUpperCase() + tl.line, w - 100, h - 50);
+  } else {
+    stat.fillText("loops: ".toUpperCase() + loops, w - 100, h - 50);
+  }
 };
 
 // draws the alphabet, the main type stuff
@@ -666,6 +677,7 @@ const increment_index = () => {
 };
 
 const done_playing = () => {
+  if (loops === 20) location.reload();
   if (parseInt(tl.sequence) === 2 && parseInt(tl.chapter) < 7) {
     set_chapter(parseInt(tl.chapter) + 1);
   } else setTimeout(() => sequencer.next_chapter(), 200);
@@ -677,6 +689,7 @@ const done_playing = () => {
   }
 
   if (parseInt(tl.chapter) === 7) {
+    loops++;
     sequencer.sequence_two();
   }
 
@@ -704,9 +717,9 @@ function setup() {
   load_all_images(img_db);
 
   // to start off
-  // s0quencer.rotation_one = 3;
+  sequencer.rotation_one = 3;
   // sequencer.rotation_four = 3;
-  set_chapter("0");
+  set_chapter("4");
   // sequencer.sequence_two();
 
   // setTimeout(() => { set_next_chapter("1");

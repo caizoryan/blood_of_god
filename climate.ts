@@ -9,7 +9,7 @@ import {
 } from ".";
 
 export let current_climate = {
-  set: function () {
+  set: function() {
     if (tl.sequence === 2) return;
     console.log("setting climate");
     if (parseInt(tl.chapter) === 1 && sequencer.rotation_one === 1)
@@ -53,7 +53,7 @@ export let current_climate = {
     if (parseInt(tl.chapter) === 7) this.seven();
   },
 
-  one_one: function () {
+  one_one: function() {
     tl.draw_stats = true;
     tl.clear_rate = 0.03;
     // type disturbance
@@ -65,7 +65,7 @@ export let current_climate = {
     image.size_random_max = 150;
     image.size_random_min = 300;
   },
-  two_one: function () {
+  two_one: function() {
     tl.clear_rate = 0.03;
     // type disturbance
     type.disturbance = 300;
@@ -76,7 +76,7 @@ export let current_climate = {
     image.size_random_min = 150;
     image.size_random_max = 350;
   },
-  three_one: function () {
+  three_one: function() {
     tl.clear_rate = 0.03;
     // type disturbance
     type.disturbance = 140;
@@ -93,7 +93,7 @@ export let current_climate = {
     image.size_random_min = 200;
   },
 
-  one_two: function () {
+  one_two: function() {
     tl.clear_rate = 0.03;
 
     image.spatial_randomness = 300;
@@ -102,7 +102,7 @@ export let current_climate = {
     image.size_random_max = 400;
     image.size_random_min = 250;
   },
-  two_two: function () {
+  two_two: function() {
     tl.clear_rate = 0.03;
 
     image.spatial_randomness = 300;
@@ -111,7 +111,7 @@ export let current_climate = {
     image.size_random_max = 400;
     image.size_random_min = 250;
   },
-  three_two: function () {
+  three_two: function() {
     tl.clear_rate = 0.03;
 
     image.spatial_randomness = 200;
@@ -121,73 +121,73 @@ export let current_climate = {
     image.size_random_min = 300;
   },
 
-  one_three: function () {
+  one_three: function() {
     tl.clear_rate = 0.03;
 
     image.spatial_randomness = 200;
-    image.temporal_randomness = 0.62;
+    image.temporal_randomness = 0.52;
 
-    image.x = 50;
-    image.y = 100;
+    // image.x = 50;
+    // image.y = 100;
 
-    image.lined = true;
+    // image.lined = true;
 
     image.size_random_max = 400;
     image.size_random_min = 300;
   },
-  two_three: function () {
+  two_three: function() {
     tl.clear_rate = 0.03;
 
     image.spatial_randomness = 100;
     image.temporal_randomness = 0.52;
 
-    image.x = 50;
-    image.y = 100;
+    // image.x = 50;
+    // image.y = 100;
 
-    image.lined = true;
+    // image.lined = true;
 
     image.size_random_max = 400;
     image.size_random_min = 300;
   },
-  three_three: function () {
+  three_three: function() {
     tl.clear_rate = 0.03;
 
     image.spatial_randomness = 100;
     image.temporal_randomness = 0.52;
 
-    image.x = 50;
-    image.y = 100;
+    // image.x = 50;
+    // image.y = 100;
 
-    image.lined = true;
+    // image.lined = true;
 
     image.size_random_max = 400;
     image.size_random_min = 350;
   },
 
-  four_one: function () {
-    image.lined = true;
+  four_one: function() {
+    // image.lined = true;
     // type disturbance
     type.disturbance = 40;
 
     // image disturbance
-    image.spatial_randomness = 200;
-    image.temporal_randomness = 0.65;
+    image.spatial_randomness = 180;
+    image.temporal_randomness = 0.25;
 
-    image.margin = -50;
+    image.margin = 50;
 
-    image.x = 50;
-    image.y = 200;
+    // image.x = 50;
+    // image.y = 200;
 
     image.size_random_max = 550;
     image.size_random_min = 450;
   },
-  four_two: function () {
+  four_two: function() {
     image.lined = true;
     // type disturbance
     type.disturbance = 50;
 
     // image disturbance
-    image.spatial_randomness = 150;
+    image.spatial_randomness = 250;
     image.temporal_randomness = 0.4;
 
     image.margin = -250;
@@ -195,7 +195,7 @@ export let current_climate = {
     image.size_random_max = 550;
     image.size_random_min = 450;
   },
-  four_three: function () {
+  four_three: function() {
     image.lined = true;
     // type disturbance
     type.disturbance = 40;
@@ -204,18 +204,21 @@ export let current_climate = {
     image.spatial_randomness = 100;
     image.temporal_randomness = 0.3;
 
-    image.margin = -450;
+    image.x = 50;
+    image.y = 150;
+
+    image.margin = 50;
 
     image.size_random_max = 550;
     image.size_random_min = 500;
   },
 
-  five: function () {
+  five: function() {
     image.lined = true;
     // I have to somehow make this just one image...
   },
 
-  six: function () {
+  six: function() {
     image.lined = false;
     tl.clear_rate = 0.004;
 
@@ -227,7 +230,7 @@ export let current_climate = {
     // all images
   },
 
-  seven: function () {
+  seven: function() {
     image.lined = false;
 
     tl.clear_rate = 0.03;
