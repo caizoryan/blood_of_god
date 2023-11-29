@@ -218,9 +218,9 @@ const Frame = () => {
   onMount(() => {
     setup();
 
-    // document.getElementById("intro")?.addEventListener("ended", () => {
-    //   set_next_chapter(1);
-    // });
+    document.getElementById("intro")?.addEventListener("ended", () => {
+      set_next_chapter(1);
+    });
   });
 
   let style = {

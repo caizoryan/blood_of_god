@@ -2128,6 +2128,9 @@ var Root = () => {
 var Frame = () => {
   onMount(() => {
     setup();
+    document.getElementById("intro")?.addEventListener("ended", () => {
+      set_next_chapter(1);
+    });
   });
   let style2 = {
     position: "fixed",
