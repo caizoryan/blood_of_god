@@ -1798,6 +1798,7 @@ var current_climate = {
       this.seven();
   },
   one_one: function() {
+    tl.draw_stats = true;
     tl.clear_rate = 0.03;
     type.disturbance = 350;
     image.spatial_randomness = 700;
@@ -1960,9 +1961,7 @@ var setup = function() {
   setDPI(canvas, 300);
   setDPI(canvas_stats, 300);
   load_all_images(img_db);
-  sequencer.rotation_one = 3;
-  sequencer.rotation_four = 3;
-  set_chapter("1");
+  set_chapter("0");
   setTimeout(() => {
     requestAnimationFrame(canvas_loop);
   }, 100);
@@ -2014,6 +2013,7 @@ var stat;
 var text = "";
 var img_db = {};
 var tl = {
+  draw_stats: false,
   chapter: 1,
   act: 1,
   sequence: 1,
@@ -2079,8 +2079,8 @@ var disturbance = {
   "6": 0,
   "7": 0
 };
-var [next_chapter, set_next_chapter] = createSignal(1);
-var [this_chapter, set_this_chapter] = createSignal(1);
+var [next_chapter, set_next_chapter] = createSignal(0);
+var [this_chapter, set_this_chapter] = createSignal(0);
 var Root = () => {
   return h("div", {
     style: {
@@ -2095,13 +2095,22 @@ var Root = () => {
 var Frame = () => {
   onMount(() => {
     setup();
+    document.getElementById("intro")?.addEventListener("ended", () => {
+      set_next_chapter(1);
+    });
   });
   let style2 = {
-    position: "absolute",
+    position: "fixed",
     top: "0px",
     left: "0px"
   };
   return [
+    h("video", {
+      id: "intro",
+      src: "intro.mp4",
+      autoplay: true,
+      loop: false
+    }),
     h("canvas", {
       id: "canvas",
       style: style2,
@@ -2178,6 +2187,8 @@ var scheduler = {
     }
   },
   draw_image: function() {
+    if (!current_chapter())
+      return;
     if (!current_image_set())
       return;
     tick.call(timer.image);
@@ -2206,13 +2217,15 @@ var scheduler = {
     other_img_ratio = last_img_ratio;
   },
   draw_stats: function() {
-    draw_stats();
+    if (tl.draw_stats)
+      draw_stats();
   },
   play: function() {
     scheduler.draw_stats();
     is_it_time_to.call(timer.type) && scheduler.draw_type();
     is_it_time_to.call(timer.image) && scheduler.draw_image();
-    Math.random() < tl.clear_rate && not_clear();
+    if (tl.chapter > 0)
+      Math.random() < tl.clear_rate && not_clear();
   }
 };
 var clock = {
@@ -2256,7 +2269,10 @@ var draw_stats = () => {
   stat.fillText("image max: ".toUpperCase() + image.size_random_max + "px", 10, 100);
   stat.fillText("type disturbance: ".toUpperCase() + "+-" + Math.floor(type.disturbance), 10, h3 - 50);
   stat.fillText("clear rate: ".toUpperCase() + "+-" + tl.clear_rate * 100 + "%", 10, h3 - 60);
-  stat.fillText("chapter: ".toUpperCase() + tl.chapter, w - 100, 50);
+  if (tl.chapter === 0)
+    stat.fillText("prologue".toUpperCase(), w - 100, 50);
+  else
+    stat.fillText("chapter: ".toUpperCase() + tl.chapter, w - 100, 50);
   stat.fillText("line: ".toUpperCase() + tl.line, w - 100, h3 - 50);
 };
 var draw_alphabet = (letter, index) => {
@@ -2328,6 +2344,8 @@ var set_chapter = (number) => {
   tl.resetting = true;
   tl.image_set = 0;
   tl.image_index = 0;
+  if (parseInt(number) === 0)
+    return;
   let cur_audio = new Audio(sequence_1[tl.chapter].audio);
   type.disturbance = disturbance[tl.chapter];
   tl.text_index = 0;

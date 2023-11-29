@@ -86,6 +86,7 @@ let text = "";
 export let img_db: any = {};
 
 export let tl: any = {
+  draw_stats: false,
   chapter: 1,
   act: 1,
   sequence: 1,
@@ -159,8 +160,8 @@ const disturbance = {
 };
 
 // this holds the state of the chapter selection bar
-const [next_chapter, set_next_chapter] = s(1);
-const [this_chapter, set_this_chapter] = s(1);
+const [next_chapter, set_next_chapter] = s(0);
+const [this_chapter, set_this_chapter] = s(0);
 
 // Main Div that has everything, including our Canvas
 const Root = () => {
@@ -185,15 +186,26 @@ const Root = () => {
 const Frame = () => {
   onMount(() => {
     setup();
+
+    document.getElementById("intro")?.addEventListener("ended", () => {
+      set_next_chapter(1);
+    });
   });
 
   let style = {
-    position: "absolute",
+    position: "fixed",
     top: "0px",
     left: "0px",
   };
 
   return [
+    h("video", {
+      id: "intro",
+      src: "intro.mp4",
+      autoplay: true,
+      loop: false,
+      // width: window.innerWidth,
+    }),
     h("canvas", {
       id: "canvas",
       style,
@@ -293,6 +305,7 @@ const scheduler = {
     }
   },
   draw_image: function () {
+    if (!current_chapter()) return;
     if (!current_image_set()) return;
 
     tick.call(timer.image);
@@ -326,13 +339,13 @@ const scheduler = {
     other_img_ratio = last_img_ratio;
   },
   draw_stats: function () {
-    draw_stats();
+    if (tl.draw_stats) draw_stats();
   },
   play: function () {
     scheduler.draw_stats();
     is_it_time_to.call(timer.type) ? scheduler.draw_type() : null;
     is_it_time_to.call(timer.image) ? scheduler.draw_image() : null;
-    Math.random() < tl.clear_rate ? not_clear() : null;
+    if (tl.chapter > 0) Math.random() < tl.clear_rate ? not_clear() : null;
   },
 };
 
@@ -435,7 +448,8 @@ const draw_stats = () => {
   );
 
   // bottom left
-  stat.fillText("chapter: ".toUpperCase() + tl.chapter, w - 100, 50);
+  if (tl.chapter === 0) stat.fillText("prologue".toUpperCase(), w - 100, 50);
+  else stat.fillText("chapter: ".toUpperCase() + tl.chapter, w - 100, 50);
 
   // bottom right
   stat.fillText("line: ".toUpperCase() + tl.line, w - 100, h - 50);
@@ -553,6 +567,8 @@ const set_chapter = (number) => {
   tl.image_set = 0;
   tl.image_index = 0;
 
+  if (parseInt(number) === 0) return;
+
   let cur_audio = new Audio(sequence_1[tl.chapter].audio);
 
   type.disturbance = disturbance[tl.chapter];
@@ -648,9 +664,12 @@ function setup() {
   load_all_images(img_db);
 
   // to start off
-  sequencer.rotation_one = 3;
-  sequencer.rotation_four = 3;
-  set_chapter("1");
+  // sequencer.rotation_one = 3;
+  // sequencer.rotation_four = 3;
+  set_chapter("0");
+
+  // setTimeout(() => { set_next_chapter("1");
+  // }, 5500);
 
   setTimeout(() => {
     requestAnimationFrame(canvas_loop);

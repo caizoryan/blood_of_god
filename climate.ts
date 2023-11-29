@@ -52,6 +52,7 @@ export let current_climate = {
   },
 
   one_one: function () {
+    tl.draw_stats = true;
     tl.clear_rate = 0.03;
     // type disturbance
     type.disturbance = 350;
