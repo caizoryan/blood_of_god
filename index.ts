@@ -352,21 +352,25 @@ const scheduler = {
     let last_img_ratio = other_img_ratio;
     drawing_neck() ? (other_img_ratio = 0.898) : null;
 
-    if (!image.lined) {
-      if (Math.random() > image.temporal_randomness)
-        draw_image_frame(tl.image_index);
+    if (parseInt(tl.chapter) === 5) {
+      draw_fifth_chapter();
     } else {
-      if (image.to_draw) {
-        draw_image_frame_line(tl.image_index);
-
-        // reset state
-        if (image.draw_count > 3) {
-          image.draw_count = 0;
-          image.to_draw = false;
-        }
+      if (!image.lined) {
+        if (Math.random() > image.temporal_randomness)
+          draw_image_frame(tl.image_index);
       } else {
-        // should we draw?
-        if (Math.random() > image.temporal_randomness) image.to_draw = true;
+        if (image.to_draw) {
+          draw_image_frame_line(tl.image_index);
+
+          // reset state
+          if (image.draw_count > 3) {
+            image.draw_count = 0;
+            image.to_draw = false;
+          }
+        } else {
+          // should we draw?
+          if (Math.random() > image.temporal_randomness) image.to_draw = true;
+        }
       }
     }
 
@@ -567,6 +571,24 @@ const draw_image_frame_line = (index) => {
   }
 };
 
+const draw_fifth_chapter = () => {
+  // skip
+  if (current_image_set()) {
+    let x = 200;
+    let y = 200;
+
+    ctx.globalCompositeOperation = "source-over";
+
+    image.w = window.innerWidth - 400;
+
+    let w = image.w;
+    let h = image.h();
+
+    // ctx.globalCompositeOperation = "exclusion";
+    ctx.drawImage(img_db[current_image_set().name][20], x, y, w, h);
+  }
+};
+
 const draw_image_frame = (index) => {
   // skip
   if (current_image_set()) {
@@ -719,7 +741,7 @@ function setup() {
   // to start off
   sequencer.rotation_one = 3;
   // sequencer.rotation_four = 3;
-  set_chapter("4");
+  set_chapter("5");
   // sequencer.sequence_two();
 
   // setTimeout(() => { set_next_chapter("1");

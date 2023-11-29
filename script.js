@@ -1955,7 +1955,7 @@ var setup = function() {
   setDPI(canvas_stats, 300);
   load_all_images(img_db);
   sequencer.rotation_one = 3;
-  set_chapter("4");
+  set_chapter("5");
   setTimeout(() => {
     requestAnimationFrame(canvas_loop);
   }, 100);
@@ -2215,19 +2215,23 @@ var scheduler = {
     }
     let last_img_ratio = other_img_ratio;
     drawing_neck() && (other_img_ratio = 0.898);
-    if (!image.lined) {
-      if (Math.random() > image.temporal_randomness)
-        draw_image_frame(tl.image_index);
+    if (parseInt(tl.chapter) === 5) {
+      draw_fifth_chapter();
     } else {
-      if (image.to_draw) {
-        draw_image_frame_line(tl.image_index);
-        if (image.draw_count > 3) {
-          image.draw_count = 0;
-          image.to_draw = false;
-        }
-      } else {
+      if (!image.lined) {
         if (Math.random() > image.temporal_randomness)
-          image.to_draw = true;
+          draw_image_frame(tl.image_index);
+      } else {
+        if (image.to_draw) {
+          draw_image_frame_line(tl.image_index);
+          if (image.draw_count > 3) {
+            image.draw_count = 0;
+            image.to_draw = false;
+          }
+        } else {
+          if (Math.random() > image.temporal_randomness)
+            image.to_draw = true;
+        }
       }
     }
     other_img_ratio = last_img_ratio;
@@ -2343,6 +2347,17 @@ var draw_image_frame_line = (index) => {
     }
     ctx.drawImage(img_db[current_image_set().name][index], x, y, w, h3);
     image.draw_count++;
+  }
+};
+var draw_fifth_chapter = () => {
+  if (current_image_set()) {
+    let x = 200;
+    let y = 200;
+    ctx.globalCompositeOperation = "source-over";
+    image.w = window.innerWidth - 400;
+    let w = image.w;
+    let h3 = image.h();
+    ctx.drawImage(img_db[current_image_set().name][20], x, y, w, h3);
   }
 };
 var draw_image_frame = (index) => {
