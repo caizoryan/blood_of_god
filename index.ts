@@ -352,7 +352,7 @@ const scheduler = {
     let last_img_ratio = other_img_ratio;
     drawing_neck() ? (other_img_ratio = 0.898) : null;
 
-    if (parseInt(tl.chapter) === 5) {
+    if (parseInt(tl.chapter) === 5 && parseInt(tl.sequence) === 1) {
       draw_fifth_chapter();
     } else {
       if (!image.lined) {
