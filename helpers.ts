@@ -40,6 +40,21 @@ export const make_alphabet_dataset = () => {
   return images.flat();
 };
 
+export const make_black_alphabet_dataset = () => {
+  let alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
+
+  let images = alphabet.map((letter) => {
+    let low = {
+      key: letter.toLowerCase(),
+      src: `./black/${letter}.png`,
+    };
+
+    return low;
+  });
+
+  return images;
+};
+
 export const make_new_alphabet_dataset = () => {
   let alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
 
@@ -100,7 +115,7 @@ export const load_images = (images: { key: string; src: string }[]) => {
 };
 
 export const load_all_images = (db) => {
-  db.type = load_images(make_alphabet_dataset());
+  db.type = load_images(make_black_alphabet_dataset());
 
   for (const value of Object.values(sequence_1)) {
     value.images.forEach((image) => {

@@ -168,7 +168,7 @@ export const sequence_1 = {
       {
         name: "shape",
         frames: 60,
-        delay: 13700,
+        delay: 13400,
       },
     ],
   },

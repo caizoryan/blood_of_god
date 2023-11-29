@@ -28,7 +28,10 @@ import { sequence_1 } from "./data.js";
 import { current_climate } from "./climate";
 
 // the ratio of the image (height / width)
-export const img_ratio = 0.78;
+//
+// for white alophebet
+// export const img_ratio = 0.78;
+export const img_ratio = 1.27;
 
 const [mouse, set_mouse] = s({ x: 0, y: 0 });
 
@@ -43,7 +46,7 @@ export let type = {
   last_line_end: 0,
   disturbance: 250,
 
-  width: 500,
+  width: 400,
   height: function () {
     return this.width * img_ratio;
   },
@@ -166,6 +169,7 @@ const Root = () => {
     {
       style: {
         display: "flex",
+        background: "black",
         "justify-content": "center",
         "align-items": "center",
         height: "100vh",
@@ -281,7 +285,7 @@ const drawing_neck = () => {
 const scheduler = {
   draw_type: function () {
     if (tl.typing) {
-      ctx.globalCompositeOperation = "multiply";
+      ctx.globalCompositeOperation = "screen";
       if (text[tl.text_index] !== " ")
         draw_alphabet(text[tl.text_index], tl.text_index + 3);
       tick.call(timer.type);
@@ -368,14 +372,14 @@ const not_clear = () => {
   let y_distrubance = Math.random() * image.spatial_randomness * pos_or_neg();
 
   ctx.globalCompositeOperation = "source-over";
-  ctx.fillStyle = "rgba(255,255,255,1)";
+  ctx.fillStyle = "rgba(0,0,0,1)";
   ctx.fillRect(0, 0, 1200, 800);
 };
 
 // Drawing of the stats
 const draw_stats = () => {
   stat.clearRect(0, 0, window.innerWidth, window.innerHeight);
-  stat.fillStyle = "black";
+  stat.fillStyle = "white";
   stat.font = "9px monospace";
 
   let s = 300 / 96;
@@ -426,8 +430,8 @@ const draw_stats = () => {
 
   stat.fillText(
     "clear rate: ".toUpperCase() + "+-" + tl.clear_rate * 100 + "%",
-    20,
-    h - 50,
+    10,
+    h - 60,
   );
 
   // bottom left
@@ -644,8 +648,8 @@ function setup() {
   load_all_images(img_db);
 
   // to start off
-  // sequencer.rotation_one = 3;
-  // sequencer.rotation_four = 3;
+  sequencer.rotation_one = 3;
+  sequencer.rotation_four = 3;
   set_chapter("1");
 
   setTimeout(() => {

@@ -1660,7 +1660,7 @@ var sequence_1 = {
       {
         name: "shape",
         frames: 60,
-        delay: 13700
+        delay: 13400
       }
     ]
   }
@@ -1700,25 +1700,16 @@ function romanize(num) {
   }
   return roman;
 }
-var make_alphabet_dataset = () => {
+var make_black_alphabet_dataset = () => {
   let alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
   let images = alphabet.map((letter) => {
-    let up = {
-      key: letter.toUpperCase(),
-      src: `./alphabets/${letter}C.png`
-    };
     let low = {
       key: letter.toLowerCase(),
-      src: `./alphabets/${letter}.png`
+      src: `./black/${letter}.png`
     };
-    if (letter === "a")
-      low = {
-        key: letter.toLowerCase(),
-        src: `./alphabets/${letter}.jpg`
-      };
-    return [up, low];
+    return low;
   });
-  return images.flat();
+  return images;
 };
 var make_frame_dataset = (folder, num) => {
   let images = [];
@@ -1749,7 +1740,7 @@ var load_images = (images) => {
   return alphabets;
 };
 var load_all_images = (db) => {
-  db.type = load_images(make_alphabet_dataset());
+  db.type = load_images(make_black_alphabet_dataset());
   for (const value of Object.values(sequence_1)) {
     value.images.forEach((image) => {
       db[image.name] = load_images_as_array(make_frame_dataset(image.name, image.frames));
@@ -1969,12 +1960,14 @@ var setup = function() {
   setDPI(canvas, 300);
   setDPI(canvas_stats, 300);
   load_all_images(img_db);
+  sequencer.rotation_one = 3;
+  sequencer.rotation_four = 3;
   set_chapter("1");
   setTimeout(() => {
     requestAnimationFrame(canvas_loop);
   }, 100);
 };
-var img_ratio2 = 0.78;
+var img_ratio2 = 1.27;
 var [mouse, set_mouse] = createSignal({ x: 0, y: 0 });
 var type = {
   x_bound: 0,
@@ -1984,7 +1977,7 @@ var type = {
   line: 1,
   last_line_end: 0,
   disturbance: 250,
-  width: 500,
+  width: 400,
   height: function() {
     return this.width * img_ratio2;
   }
@@ -2092,6 +2085,7 @@ var Root = () => {
   return h("div", {
     style: {
       display: "flex",
+      background: "black",
       "justify-content": "center",
       "align-items": "center",
       height: "100vh"
@@ -2176,7 +2170,7 @@ var drawing_neck = () => {
 var scheduler = {
   draw_type: function() {
     if (tl.typing) {
-      ctx.globalCompositeOperation = "multiply";
+      ctx.globalCompositeOperation = "screen";
       if (text[tl.text_index] !== " ")
         draw_alphabet(text[tl.text_index], tl.text_index + 3);
       tick.call(timer.type);
@@ -2244,12 +2238,12 @@ var not_clear = () => {
   let x_disturbance = Math.random() * image.spatial_randomness * pos_or_neg();
   let y_distrubance = Math.random() * image.spatial_randomness * pos_or_neg();
   ctx.globalCompositeOperation = "source-over";
-  ctx.fillStyle = "rgba(255,255,255,1)";
+  ctx.fillStyle = "rgba(0,0,0,1)";
   ctx.fillRect(0, 0, 1200, 800);
 };
 var draw_stats = () => {
   stat.clearRect(0, 0, window.innerWidth, window.innerHeight);
-  stat.fillStyle = "black";
+  stat.fillStyle = "white";
   stat.font = "9px monospace";
   let s = 3.125;
   let w = parseInt(canvas.width) / s;
@@ -2261,7 +2255,7 @@ var draw_stats = () => {
   stat.fillText("image min: ".toUpperCase() + image.size_random_min + "px", 10, 90);
   stat.fillText("image max: ".toUpperCase() + image.size_random_max + "px", 10, 100);
   stat.fillText("type disturbance: ".toUpperCase() + "+-" + Math.floor(type.disturbance), 10, h3 - 50);
-  stat.fillText("clear rate: ".toUpperCase() + "+-" + tl.clear_rate * 100 + "%", 20, h3 - 50);
+  stat.fillText("clear rate: ".toUpperCase() + "+-" + tl.clear_rate * 100 + "%", 10, h3 - 60);
   stat.fillText("chapter: ".toUpperCase() + tl.chapter, w - 100, 50);
   stat.fillText("line: ".toUpperCase() + tl.line, w - 100, h3 - 50);
 };
