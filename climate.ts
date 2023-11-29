@@ -10,6 +10,8 @@ import {
 
 export let current_climate = {
   set: function () {
+    if (tl.sequence === 2) return;
+    console.log("setting climate");
     if (parseInt(tl.chapter) === 1 && sequencer.rotation_one === 1)
       this.one_one();
 

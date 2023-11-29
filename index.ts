@@ -103,6 +103,37 @@ export let sequencer = {
   rotation_one: 1,
   rotation_four: 1,
 
+  sequence_two: function () {
+    tl.sequence = 2;
+    set_this_chapter(1);
+    timer.reset();
+    set_chapter(1);
+    tl.chapter = 1;
+    tl.line = 0;
+    tl.resetting = true;
+    tl.image_set = 0;
+    tl.image_index = 0;
+    tl.text_index = 0;
+    tl.typing = false;
+    tl.elapsed = 0;
+    tl.clear_rate = 1;
+    tl.draw_stats = false;
+    type.disturbance = 0;
+    image.spatial_randomness = 0;
+    timer.image.interval = 50;
+    image.temporal_randomness = 0;
+    image.size_random_max = window.innerWidth;
+    image.size_random_min = window.innerWidth;
+    image.x = 0;
+    image.y = (window.innerHeight - window.innerWidth * other_img_ratio) / 2;
+    image.lined = false;
+    image.margin = 40;
+    image.to_draw = true;
+    image.draw_count = 0;
+    reset_type();
+    current_climate.set();
+  },
+
   next_chapter: function () {
     if (parseInt(tl.chapter) === 3) this.three();
     else if (parseInt(tl.chapter) === 4) this.four();
@@ -112,7 +143,7 @@ export let sequencer = {
   just_go_next: function () {
     parseInt(tl.chapter) < 7
       ? set_next_chapter(parseInt(tl.chapter) + 1)
-      : null;
+      : this.sequence_two();
   },
 
   three: function () {
@@ -187,9 +218,9 @@ const Frame = () => {
   onMount(() => {
     setup();
 
-    document.getElementById("intro")?.addEventListener("ended", () => {
-      set_next_chapter(1);
-    });
+    // document.getElementById("intro")?.addEventListener("ended", () => {
+    //   set_next_chapter(1);
+    // });
   });
 
   let style = {
@@ -229,7 +260,7 @@ const ChapterSetter = () => {
     for (let i = 1; i <= next_chapter(); i++) {
       chapters.push(i);
     }
-    return chapters;
+    return tl.sequence === 2 ? [] : chapters;
   });
 
   return h(
@@ -286,7 +317,6 @@ const increment_image_index = () => {
 const drawing_neck = () => {
   if (parseInt(tl.chapter) === 2) {
     if (parseInt(tl.image_set) === 2) {
-      console.log("neck");
       return true;
     }
   }
@@ -307,6 +337,8 @@ const scheduler = {
   draw_image: function () {
     if (!current_chapter()) return;
     if (!current_image_set()) return;
+    if (tl.clear_rate === 1)
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
     tick.call(timer.image);
     increment_image_index();
@@ -345,7 +377,8 @@ const scheduler = {
     scheduler.draw_stats();
     is_it_time_to.call(timer.type) ? scheduler.draw_type() : null;
     is_it_time_to.call(timer.image) ? scheduler.draw_image() : null;
-    if (tl.chapter > 0) Math.random() < tl.clear_rate ? not_clear() : null;
+    if (tl.chapter > 0 && tl.sequence === 1)
+      Math.random() < tl.clear_rate ? not_clear() : null;
   },
 };
 
@@ -585,6 +618,7 @@ const set_chapter = (number) => {
 // also a procedure
 // starts line of current chapter
 const start_lines = () => {
+  if (tl.sequence === 2) return;
   tl.typing = true;
   tl.text_index = 0;
   text = sequence_1[tl.chapter].lines[tl.line].text;
@@ -632,12 +666,18 @@ const increment_index = () => {
 };
 
 const done_playing = () => {
-  setTimeout(() => sequencer.next_chapter(), 200);
+  if (parseInt(tl.sequence) === 2 && parseInt(tl.chapter) < 7) {
+    set_chapter(parseInt(tl.chapter) + 1);
+  } else setTimeout(() => sequencer.next_chapter(), 200);
 
   // if within the rotation of four, signal to blink again
   // Hacky way to do this, but it works
   if (parseInt(tl.chapter) === 4 && sequencer.rotation_four < 3) {
     set_this_chapter(3);
+  }
+
+  if (parseInt(tl.chapter) === 7) {
+    sequencer.sequence_two();
   }
 
   tl.typing = false;
@@ -664,9 +704,10 @@ function setup() {
   load_all_images(img_db);
 
   // to start off
-  // sequencer.rotation_one = 3;
+  // s0quencer.rotation_one = 3;
   // sequencer.rotation_four = 3;
   set_chapter("0");
+  // sequencer.sequence_two();
 
   // setTimeout(() => { set_next_chapter("1");
   // }, 5500);

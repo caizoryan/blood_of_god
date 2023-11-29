@@ -1766,6 +1766,9 @@ var next_image_set = () => {
 // climate.ts
 var current_climate = {
   set: function() {
+    if (tl.sequence === 2)
+      return;
+    console.log("setting climate");
     if (parseInt(tl.chapter) === 1 && sequencer.rotation_one === 1)
       this.one_one();
     if (parseInt(tl.chapter) === 1 && sequencer.rotation_one === 2)
@@ -2028,6 +2031,36 @@ var tl = {
 var sequencer = {
   rotation_one: 1,
   rotation_four: 1,
+  sequence_two: function() {
+    tl.sequence = 2;
+    set_this_chapter(1);
+    timer.reset();
+    set_chapter(1);
+    tl.chapter = 1;
+    tl.line = 0;
+    tl.resetting = true;
+    tl.image_set = 0;
+    tl.image_index = 0;
+    tl.text_index = 0;
+    tl.typing = false;
+    tl.elapsed = 0;
+    tl.clear_rate = 1;
+    tl.draw_stats = false;
+    type.disturbance = 0;
+    image.spatial_randomness = 0;
+    timer.image.interval = 50;
+    image.temporal_randomness = 0;
+    image.size_random_max = window.innerWidth;
+    image.size_random_min = window.innerWidth;
+    image.x = 0;
+    image.y = (window.innerHeight - window.innerWidth * other_img_ratio) / 2;
+    image.lined = false;
+    image.margin = 40;
+    image.to_draw = true;
+    image.draw_count = 0;
+    reset_type();
+    current_climate.set();
+  },
   next_chapter: function() {
     if (parseInt(tl.chapter) === 3)
       this.three();
@@ -2037,7 +2070,7 @@ var sequencer = {
       this.just_go_next();
   },
   just_go_next: function() {
-    parseInt(tl.chapter) < 7 && set_next_chapter(parseInt(tl.chapter) + 1);
+    parseInt(tl.chapter) < 7 ? set_next_chapter(parseInt(tl.chapter) + 1) : this.sequence_two();
   },
   three: function() {
     if (this.rotation_one < 3) {
@@ -2095,9 +2128,6 @@ var Root = () => {
 var Frame = () => {
   onMount(() => {
     setup();
-    document.getElementById("intro")?.addEventListener("ended", () => {
-      set_next_chapter(1);
-    });
   });
   let style2 = {
     position: "fixed",
@@ -2131,7 +2161,7 @@ var ChapterSetter = () => {
     for (let i = 1;i <= next_chapter(); i++) {
       chapters2.push(i);
     }
-    return chapters2;
+    return tl.sequence === 2 ? [] : chapters2;
   });
   return h("div", {
     style: {
@@ -2170,7 +2200,6 @@ var increment_image_index = () => {
 var drawing_neck = () => {
   if (parseInt(tl.chapter) === 2) {
     if (parseInt(tl.image_set) === 2) {
-      console.log("neck");
       return true;
     }
   }
@@ -2191,6 +2220,8 @@ var scheduler = {
       return;
     if (!current_image_set())
       return;
+    if (tl.clear_rate === 1)
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
     tick.call(timer.image);
     increment_image_index();
     if (current_chapter().images[tl.image_set].delay) {
@@ -2224,7 +2255,7 @@ var scheduler = {
     scheduler.draw_stats();
     is_it_time_to.call(timer.type) && scheduler.draw_type();
     is_it_time_to.call(timer.image) && scheduler.draw_image();
-    if (tl.chapter > 0)
+    if (tl.chapter > 0 && tl.sequence === 1)
       Math.random() < tl.clear_rate && not_clear();
   }
 };
@@ -2357,6 +2388,8 @@ var set_chapter = (number) => {
   };
 };
 var start_lines = () => {
+  if (tl.sequence === 2)
+    return;
   tl.typing = true;
   tl.text_index = 0;
   text = sequence_1[tl.chapter].lines[tl.line].text;
@@ -2378,9 +2411,15 @@ var increment_index = () => {
     tl.text_index++;
 };
 var done_playing = () => {
-  setTimeout(() => sequencer.next_chapter(), 200);
+  if (parseInt(tl.sequence) === 2 && parseInt(tl.chapter) < 7) {
+    set_chapter(parseInt(tl.chapter) + 1);
+  } else
+    setTimeout(() => sequencer.next_chapter(), 200);
   if (parseInt(tl.chapter) === 4 && sequencer.rotation_four < 3) {
     set_this_chapter(3);
+  }
+  if (parseInt(tl.chapter) === 7) {
+    sequencer.sequence_two();
   }
   tl.typing = false;
 };
