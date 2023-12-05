@@ -89,6 +89,7 @@ let text = "";
 export let img_db: any = {};
 
 export let tl: any = {
+  cur_audio: new Audio(),
   draw_stats: false,
   chapter: 1,
   act: 1,
@@ -134,7 +135,7 @@ export let sequencer = {
     image.to_draw = true;
     image.draw_count = 0;
     reset_type();
-    current_climate.set();
+    // current_climate.set();
   },
 
   next_chapter: function() {
@@ -144,9 +145,20 @@ export let sequencer = {
   },
 
   just_go_next: function() {
-    parseInt(tl.chapter) < 7
-      ? set_next_chapter(parseInt(tl.chapter) + 1)
-      : this.sequence_two();
+    if (parseInt(tl.chapter) < 7) {
+      set_next_chapter(parseInt(tl.chapter) + 1);
+    } else {
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      if (loops === 0) {
+        setTimeout(function() {
+          sequencer.sequence_two();
+        }, 2500);
+      } else {
+        sequencer.sequence_two();
+      }
+
+      loops++;
+    }
   },
 
   three: function() {
@@ -221,9 +233,9 @@ const Frame = () => {
   onMount(() => {
     setup();
 
-    document.getElementById("intro")?.addEventListener("ended", () => {
-      set_next_chapter(1);
-    });
+    // document.getElementById("intro")?.addEventListener("ended", () => {
+    //   set_next_chapter(1);
+    // });
   });
 
   let style = {
@@ -233,13 +245,13 @@ const Frame = () => {
   };
 
   return [
-    h("video", {
-      id: "intro",
-      src: "intro.mp4",
-      autoplay: true,
-      loop: false,
-      height: window.innerHeight,
-    }),
+    // h("video", {
+    //   id: "intro",
+    //   src: "intro.mp4",
+    //   autoplay: true,
+    //   loop: false,
+    //   height: window.innerHeight,
+    // }),
     h("canvas", {
       id: "canvas",
       style,
@@ -636,15 +648,13 @@ const set_chapter = (number) => {
 
   if (parseInt(number) === 0) return;
 
-  let cur_audio = new Audio(sequence_1[tl.chapter].audio);
-
   type.disturbance = disturbance[tl.chapter];
   tl.text_index = 0;
 
   start_lines();
   current_climate.set();
-  cur_audio.play();
-  cur_audio.onended = (event) => {
+  tl.cur_audio.play();
+  tl.cur_audio.onended = (event) => {
     done_playing();
   };
 };
@@ -711,11 +721,6 @@ const done_playing = () => {
     set_this_chapter(3);
   }
 
-  if (parseInt(tl.chapter) === 7) {
-    loops++;
-    sequencer.sequence_two();
-  }
-
   tl.typing = false;
 };
 
@@ -740,7 +745,8 @@ function setup() {
   load_all_images(img_db);
 
   // to start off
-  set_chapter("0");
+  set_chapter("7");
+  sequencer.rotation_one = 3;
   // sequencer.sequence_two();
 
   // setTimeout(() => { set_next_chapter("1");

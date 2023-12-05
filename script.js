@@ -1766,41 +1766,43 @@ var next_image_set = () => {
 // climate.ts
 var current_climate = {
   set: function() {
-    if (tl.sequence === 2)
-      return;
-    console.log("setting climate");
-    if (parseInt(tl.chapter) === 1 && sequencer.rotation_one === 1)
-      this.one_one();
-    if (parseInt(tl.chapter) === 1 && sequencer.rotation_one === 2)
-      this.one_two();
-    if (parseInt(tl.chapter) === 1 && sequencer.rotation_one === 3)
-      this.one_three();
-    if (parseInt(tl.chapter) === 2 && sequencer.rotation_one === 1)
-      this.two_one();
-    if (parseInt(tl.chapter) === 2 && sequencer.rotation_one === 2)
-      this.two_two();
-    if (parseInt(tl.chapter) === 2 && sequencer.rotation_one === 3)
-      this.two_three();
-    if (parseInt(tl.chapter) === 3 && sequencer.rotation_one === 1)
-      this.three_one();
-    if (parseInt(tl.chapter) === 3 && sequencer.rotation_one === 2)
-      this.three_two();
-    if (parseInt(tl.chapter) === 3 && sequencer.rotation_one === 3)
-      this.three_three();
-    if (parseInt(tl.chapter) === 4 && sequencer.rotation_four === 1)
-      this.four_one();
-    if (parseInt(tl.chapter) === 4 && sequencer.rotation_four === 2)
-      this.four_two();
-    if (parseInt(tl.chapter) === 4 && sequencer.rotation_four === 3)
-      this.four_three();
-    if (parseInt(tl.chapter) === 5)
-      this.five();
-    if (parseInt(tl.chapter) === 6)
-      this.six();
-    if (parseInt(tl.chapter) === 7)
-      this.seven();
+    if (tl.sequence === 2) {
+      tl.cur_audio = new Audio(sequence_1[tl.chapter].audio);
+    } else {
+      if (parseInt(tl.chapter) === 1 && sequencer.rotation_one === 1)
+        this.one_one();
+      if (parseInt(tl.chapter) === 1 && sequencer.rotation_one === 2)
+        this.one_two();
+      if (parseInt(tl.chapter) === 1 && sequencer.rotation_one === 3)
+        this.one_three();
+      if (parseInt(tl.chapter) === 2 && sequencer.rotation_one === 1)
+        this.two_one();
+      if (parseInt(tl.chapter) === 2 && sequencer.rotation_one === 2)
+        this.two_two();
+      if (parseInt(tl.chapter) === 2 && sequencer.rotation_one === 3)
+        this.two_three();
+      if (parseInt(tl.chapter) === 3 && sequencer.rotation_one === 1)
+        this.three_one();
+      if (parseInt(tl.chapter) === 3 && sequencer.rotation_one === 2)
+        this.three_two();
+      if (parseInt(tl.chapter) === 3 && sequencer.rotation_one === 3)
+        this.three_three();
+      if (parseInt(tl.chapter) === 4 && sequencer.rotation_four === 1)
+        this.four_one();
+      if (parseInt(tl.chapter) === 4 && sequencer.rotation_four === 2)
+        this.four_two();
+      if (parseInt(tl.chapter) === 4 && sequencer.rotation_four === 3)
+        this.four_three();
+      if (parseInt(tl.chapter) === 5)
+        this.five();
+      if (parseInt(tl.chapter) === 6)
+        this.six();
+      if (parseInt(tl.chapter) === 7)
+        this.seven();
+    }
   },
   one_one: function() {
+    tl.cur_audio = new Audio("audio/1.1 (A).mp3");
     tl.draw_stats = true;
     tl.clear_rate = 0.03;
     type.disturbance = 350;
@@ -1810,6 +1812,7 @@ var current_climate = {
     image.size_random_min = 300;
   },
   two_one: function() {
+    tl.cur_audio = new Audio("audio/2.1 (C).mp3");
     tl.clear_rate = 0.03;
     type.disturbance = 300;
     image.spatial_randomness = 600;
@@ -1818,6 +1821,7 @@ var current_climate = {
     image.size_random_max = 350;
   },
   three_one: function() {
+    tl.cur_audio = new Audio("audio/3.1 (A).mp3");
     tl.clear_rate = 0.03;
     type.disturbance = 140;
     image.spatial_randomness = 400;
@@ -1826,6 +1830,7 @@ var current_climate = {
     image.size_random_min = 200;
   },
   one_two: function() {
+    tl.cur_audio = new Audio("audio/1.2 (C).mp3");
     tl.clear_rate = 0.03;
     image.spatial_randomness = 300;
     image.temporal_randomness = 0.82;
@@ -1833,6 +1838,7 @@ var current_climate = {
     image.size_random_min = 250;
   },
   two_two: function() {
+    tl.cur_audio = new Audio("audio/2.2 (A).mp3");
     tl.clear_rate = 0.03;
     image.spatial_randomness = 300;
     image.temporal_randomness = 0.82;
@@ -1840,6 +1846,7 @@ var current_climate = {
     image.size_random_min = 250;
   },
   three_two: function() {
+    tl.cur_audio = new Audio("audio/3.2 (A).mp3");
     tl.clear_rate = 0.03;
     image.spatial_randomness = 200;
     image.temporal_randomness = 0.62;
@@ -1847,6 +1854,7 @@ var current_climate = {
     image.size_random_min = 300;
   },
   one_three: function() {
+    tl.cur_audio = new Audio("audio/1.3 (C).mp3");
     tl.clear_rate = 0.03;
     image.spatial_randomness = 200;
     image.temporal_randomness = 0.52;
@@ -1854,6 +1862,7 @@ var current_climate = {
     image.size_random_min = 300;
   },
   two_three: function() {
+    tl.cur_audio = new Audio("audio/2.3 (A).mp3");
     tl.clear_rate = 0.03;
     image.spatial_randomness = 100;
     image.temporal_randomness = 0.52;
@@ -1861,6 +1870,7 @@ var current_climate = {
     image.size_random_min = 300;
   },
   three_three: function() {
+    tl.cur_audio = new Audio("audio/3.3 (C).mp3");
     tl.clear_rate = 0.03;
     image.spatial_randomness = 100;
     image.temporal_randomness = 0.52;
@@ -1868,6 +1878,7 @@ var current_climate = {
     image.size_random_min = 350;
   },
   four_one: function() {
+    tl.cur_audio = new Audio("audio/4.1 (C).mp3");
     type.disturbance = 40;
     image.spatial_randomness = 180;
     image.temporal_randomness = 0.25;
@@ -1876,6 +1887,7 @@ var current_climate = {
     image.size_random_min = 450;
   },
   four_two: function() {
+    tl.cur_audio = new Audio("audio/4.2 (A).mp3");
     image.lined = true;
     type.disturbance = 50;
     image.spatial_randomness = 250;
@@ -1885,6 +1897,7 @@ var current_climate = {
     image.size_random_min = 450;
   },
   four_three: function() {
+    tl.cur_audio = new Audio("audio/4.3 (C).mp3");
     image.lined = true;
     type.disturbance = 40;
     image.spatial_randomness = 100;
@@ -1896,17 +1909,20 @@ var current_climate = {
     image.size_random_min = 500;
   },
   five: function() {
+    tl.cur_audio = new Audio("audio/chapter5(act3).mp3");
     image.lined = true;
   },
   six: function() {
+    tl.cur_audio = new Audio("audio/chapter6(act3).mp3");
     image.lined = false;
     tl.clear_rate = 0.004;
-    image.spatial_randomness = 550;
+    image.spatial_randomness = 750;
     image.temporal_randomness = 0;
     image.size_random_max = 550;
     image.size_random_min = 450;
   },
   seven: function() {
+    tl.cur_audio = new Audio("audio/chapter7(act3).mp3");
     image.lined = false;
     tl.clear_rate = 0.03;
     image.spatial_randomness = 20;
@@ -1954,7 +1970,8 @@ var setup = function() {
   setDPI(canvas, 300);
   setDPI(canvas_stats, 300);
   load_all_images(img_db);
-  set_chapter("0");
+  set_chapter("7");
+  sequencer.rotation_one = 3;
   setTimeout(() => {
     requestAnimationFrame(canvas_loop);
   }, 100);
@@ -2007,6 +2024,7 @@ var stat;
 var text = "";
 var img_db = {};
 var tl = {
+  cur_audio: new Audio,
   draw_stats: false,
   chapter: 1,
   act: 1,
@@ -2049,7 +2067,6 @@ var sequencer = {
     image.to_draw = true;
     image.draw_count = 0;
     reset_type();
-    current_climate.set();
   },
   next_chapter: function() {
     if (parseInt(tl.chapter) === 3)
@@ -2060,7 +2077,19 @@ var sequencer = {
       this.just_go_next();
   },
   just_go_next: function() {
-    parseInt(tl.chapter) < 7 ? set_next_chapter(parseInt(tl.chapter) + 1) : this.sequence_two();
+    if (parseInt(tl.chapter) < 7) {
+      set_next_chapter(parseInt(tl.chapter) + 1);
+    } else {
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      if (loops === 0) {
+        setTimeout(function() {
+          sequencer.sequence_two();
+        }, 2500);
+      } else {
+        sequencer.sequence_two();
+      }
+      loops++;
+    }
   },
   three: function() {
     if (this.rotation_one < 3) {
@@ -2118,9 +2147,6 @@ var Root = () => {
 var Frame = () => {
   onMount(() => {
     setup();
-    document.getElementById("intro")?.addEventListener("ended", () => {
-      set_next_chapter(1);
-    });
   });
   let style2 = {
     position: "fixed",
@@ -2128,13 +2154,6 @@ var Frame = () => {
     left: "0px"
   };
   return [
-    h("video", {
-      id: "intro",
-      src: "intro.mp4",
-      autoplay: true,
-      loop: false,
-      height: window.innerHeight
-    }),
     h("canvas", {
       id: "canvas",
       style: style2,
@@ -2394,13 +2413,12 @@ var set_chapter = (number) => {
   tl.image_index = 0;
   if (parseInt(number) === 0)
     return;
-  let cur_audio = new Audio(sequence_1[tl.chapter].audio);
   type.disturbance = disturbance[tl.chapter];
   tl.text_index = 0;
   start_lines();
   current_climate.set();
-  cur_audio.play();
-  cur_audio.onended = (event) => {
+  tl.cur_audio.play();
+  tl.cur_audio.onended = (event) => {
     done_playing();
   };
 };
@@ -2436,10 +2454,6 @@ var done_playing = () => {
     setTimeout(() => sequencer.next_chapter(), 200);
   if (parseInt(tl.chapter) === 4 && sequencer.rotation_four < 3) {
     set_this_chapter(3);
-  }
-  if (parseInt(tl.chapter) === 7) {
-    loops++;
-    sequencer.sequence_two();
   }
   tl.typing = false;
 };
