@@ -89,12 +89,13 @@ let text = "";
 export let img_db: any = {};
 
 export let tl: any = {
-  cur_audio: new Audio(),
+  cur_audio: "audio/chapter1(act1).mp3",
   draw_stats: false,
   chapter: 1,
   act: 1,
   sequence: 1,
   image_set: 0,
+  delay: true,
   image_index: 0,
   text_index: 0,
   typing: false,
@@ -109,6 +110,7 @@ export let sequencer = {
 
   sequence_two: function() {
     tl.sequence = 2;
+    tl.delay = false;
     set_this_chapter(1);
     timer.reset();
     set_chapter(1);
@@ -121,7 +123,7 @@ export let sequencer = {
     tl.typing = false;
     tl.elapsed = 0;
     tl.clear_rate = 1;
-    // tl.draw_stats = false;
+    tl.draw_stats = true;
     type.disturbance = 0;
     image.spatial_randomness = 0;
     timer.image.interval = 50;
@@ -135,7 +137,7 @@ export let sequencer = {
     image.to_draw = true;
     image.draw_count = 0;
     reset_type();
-    // current_climate.set();
+    current_climate.set();
   },
 
   next_chapter: function() {
@@ -149,13 +151,14 @@ export let sequencer = {
       set_next_chapter(parseInt(tl.chapter) + 1);
     } else {
       ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      if (loops === 0) {
-        setTimeout(function() {
-          sequencer.sequence_two();
-        }, 2500);
-      } else {
-        sequencer.sequence_two();
-      }
+      sequencer.sequence_two();
+      // if (loops === 0) {
+      //   setTimeout(function() {
+      //     sequencer.sequence_two();
+      //   }, 2500);
+      // } else {
+      //   sequencer.sequence_two();
+      // }
 
       loops++;
     }
@@ -358,7 +361,7 @@ const scheduler = {
     tick.call(timer.image);
     increment_image_index();
 
-    if (current_chapter().images[tl.image_set].delay) {
+    if (current_chapter().images[tl.image_set].delay && tl.delay) {
       if (tl.elapsed < current_chapter().images[tl.image_set].delay) return;
     }
 
@@ -398,11 +401,6 @@ const scheduler = {
     is_it_time_to.call(timer.image) ? scheduler.draw_image() : null;
     if (tl.chapter > 0 && tl.sequence === 1)
       Math.random() < tl.clear_rate ? not_clear() : null;
-
-    if (loops === 2) {
-      console.log("done");
-      document.querySelectorAll("audio").forEach((el) => el.pause());
-    }
   },
 };
 
@@ -653,8 +651,9 @@ const set_chapter = (number) => {
 
   start_lines();
   current_climate.set();
-  tl.cur_audio.play();
-  tl.cur_audio.onended = (event) => {
+  let cur_audio = new Audio(tl.cur_audio);
+  cur_audio.play();
+  cur_audio.onended = (event) => {
     done_playing();
   };
 };
