@@ -151,16 +151,6 @@ export let sequencer = {
       set_next_chapter(parseInt(tl.chapter) + 1);
     } else {
       ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      sequencer.sequence_two();
-      // if (loops === 0) {
-      //   setTimeout(function() {
-      //     sequencer.sequence_two();
-      //   }, 2500);
-      // } else {
-      //   sequencer.sequence_two();
-      // }
-
-      loops++;
     }
   },
 
@@ -236,9 +226,9 @@ const Frame = () => {
   onMount(() => {
     setup();
 
-    // document.getElementById("intro")?.addEventListener("ended", () => {
-    //   set_next_chapter(1);
-    // });
+    document.getElementById("intro")?.addEventListener("ended", () => {
+      set_next_chapter(1);
+    });
   });
 
   let style = {
@@ -248,13 +238,13 @@ const Frame = () => {
   };
 
   return [
-    // h("video", {
-    //   id: "intro",
-    //   src: "intro.mp4",
-    //   autoplay: true,
-    //   loop: false,
-    //   height: window.innerHeight,
-    // }),
+    h("video", {
+      id: "intro",
+      src: "intro.mp4",
+      autoplay: true,
+      loop: false,
+      height: window.innerHeight,
+    }),
     h("canvas", {
       id: "canvas",
       style,
@@ -720,6 +710,11 @@ const done_playing = () => {
     set_this_chapter(3);
   }
 
+  if (parseInt(tl.chapter) === 7) {
+    loops++;
+    sequencer.sequence_two();
+  }
+
   tl.typing = false;
 };
 
@@ -744,8 +739,8 @@ function setup() {
   load_all_images(img_db);
 
   // to start off
-  set_chapter("7");
-  sequencer.rotation_one = 3;
+  set_chapter("0");
+  // sequencer.rotation_one = 3;
   // sequencer.sequence_two();
 
   // setTimeout(() => { set_next_chapter("1");

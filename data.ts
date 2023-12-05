@@ -85,7 +85,7 @@ export const sequence_1 = {
     images: [
       {
         name: "act2",
-        frames: 120,
+        frames: 162,
       },
     ],
   },

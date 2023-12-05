@@ -1578,7 +1578,7 @@ var sequence_1 = {
     images: [
       {
         name: "act2",
-        frames: 120
+        frames: 162
       }
     ]
   },
@@ -1970,8 +1970,7 @@ var setup = function() {
   setDPI(canvas, 300);
   setDPI(canvas_stats, 300);
   load_all_images(img_db);
-  set_chapter("7");
-  sequencer.rotation_one = 3;
+  set_chapter("0");
   setTimeout(() => {
     requestAnimationFrame(canvas_loop);
   }, 100);
@@ -2085,8 +2084,6 @@ var sequencer = {
       set_next_chapter(parseInt(tl.chapter) + 1);
     } else {
       ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      sequencer.sequence_two();
-      loops++;
     }
   },
   three: function() {
@@ -2145,6 +2142,9 @@ var Root = () => {
 var Frame = () => {
   onMount(() => {
     setup();
+    document.getElementById("intro")?.addEventListener("ended", () => {
+      set_next_chapter(1);
+    });
   });
   let style2 = {
     position: "fixed",
@@ -2152,6 +2152,13 @@ var Frame = () => {
     left: "0px"
   };
   return [
+    h("video", {
+      id: "intro",
+      src: "intro.mp4",
+      autoplay: true,
+      loop: false,
+      height: window.innerHeight
+    }),
     h("canvas", {
       id: "canvas",
       style: style2,
@@ -2449,6 +2456,10 @@ var done_playing = () => {
     setTimeout(() => sequencer.next_chapter(), 200);
   if (parseInt(tl.chapter) === 4 && sequencer.rotation_four < 3) {
     set_this_chapter(3);
+  }
+  if (parseInt(tl.chapter) === 7) {
+    loops++;
+    sequencer.sequence_two();
   }
   tl.typing = false;
 };
