@@ -1578,7 +1578,7 @@ var sequence_1 = {
     images: [
       {
         name: "act2",
-        frames: 162
+        frames: 183
       }
     ]
   },
