@@ -2140,6 +2140,13 @@ var Root = () => {
   }, Frame, ChapterSetter);
 };
 var Frame = () => {
+  let vid = "intro.mp4";
+  let unlocked = localStorage.getItem("unlocked");
+  if (unlocked == "true") {
+    vid = "intro_unlocked.mp4";
+  } else {
+    console.log("watch through 20 loops to unlock");
+  }
   onMount(() => {
     setup();
     document.getElementById("intro")?.addEventListener("ended", () => {
@@ -2154,7 +2161,7 @@ var Frame = () => {
   return [
     h("video", {
       id: "intro",
-      src: "intro.mp4",
+      src: vid,
       autoplay: true,
       loop: false,
       height: window.innerHeight
@@ -2448,7 +2455,7 @@ var increment_index = () => {
     tl.text_index++;
 };
 var done_playing = () => {
-  if (loops === 20)
+  if (loops === 2)
     location.reload();
   if (parseInt(tl.sequence) === 2 && parseInt(tl.chapter) < 7) {
     set_chapter(parseInt(tl.chapter) + 1);
@@ -2458,6 +2465,8 @@ var done_playing = () => {
     set_this_chapter(3);
   }
   if (parseInt(tl.chapter) === 7) {
+    if (loops === 1)
+      localStorage.setItem("unlocked", "true");
     loops++;
     sequencer.sequence_two();
   }

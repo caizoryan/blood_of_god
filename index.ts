@@ -223,6 +223,15 @@ const Root = () => {
 // ----------------
 // This is the canvas
 const Frame = () => {
+  let vid = "intro.mp4";
+
+  let unlocked = localStorage.getItem("unlocked");
+  if (unlocked == "true") {
+    vid = "intro_unlocked.mp4";
+  } else {
+    console.log("watch through 20 loops to unlock");
+  }
+
   onMount(() => {
     setup();
 
@@ -240,7 +249,7 @@ const Frame = () => {
   return [
     h("video", {
       id: "intro",
-      src: "intro.mp4",
+      src: vid,
       autoplay: true,
       loop: false,
       height: window.innerHeight,
@@ -699,7 +708,7 @@ const increment_index = () => {
 };
 
 const done_playing = () => {
-  if (loops === 20) location.reload();
+  if (loops === 2) location.reload();
   if (parseInt(tl.sequence) === 2 && parseInt(tl.chapter) < 7) {
     set_chapter(parseInt(tl.chapter) + 1);
   } else setTimeout(() => sequencer.next_chapter(), 200);
@@ -711,6 +720,7 @@ const done_playing = () => {
   }
 
   if (parseInt(tl.chapter) === 7) {
+    if (loops === 1) localStorage.setItem("unlocked", "true");
     loops++;
     sequencer.sequence_two();
   }
